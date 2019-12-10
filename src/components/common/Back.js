@@ -23,7 +23,7 @@ class Back extends Component {
         <Typography variant="h6" gutterBottom>
           <Link className={classes.link} to={{ pathname: "/dashboard" }}>
             <KeyboardArrowLeft />
-            <span className={classes.text}>Back to Dashboard</span>
+            <span className={classes.text}>Retornar para Dashboard</span>
           </Link>
         </Typography>
       </div>

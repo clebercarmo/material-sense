@@ -182,12 +182,12 @@ class Dashboard extends Component {
                   <div className={classes.block}>
                     <Typography variant="h6" gutterBottom>Dashboard</Typography>
                     <Typography variant="body1">
-                      Adjust and play with our sliders.
+                      Posicionamento de suas vendas.
                     </Typography>
                   </div>
                   <div>
                     <Button variant="outlined" className={classes.outlinedButtom}>
-                      Get help
+                      Relatorio de Vendas
                     </Button>
                   </div>
                 </div>

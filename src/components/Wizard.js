@@ -94,8 +94,8 @@ const styles = theme => ({
 
 const getSteps = () => {
   return [
-    'Info',
-    'Bank',
+    'Tipo Pedido',
+    'Cliente',
     'Loan details',
     'Terms',
     'Confirm',
@@ -148,12 +148,12 @@ class Wizard extends Component {
       return 'Accept';
     }
     if(this.state.activeStep === 4) {
-      return 'Send';
+      return 'Enviar';
     }
     if(this.state.activeStep === 5) {
       return 'Done';
     }
-    return 'Next';
+    return 'Avançar';
   }
 
   goToDashboard = event => {
@@ -199,35 +199,57 @@ class Wizard extends Component {
                       <div className={classes.topInfo}>
                         <div>
                           <Typography variant="subtitle1" style={{fontWeight: 'bold'}} gutterBottom>
-                            Information
+                            Escolha o tipo do pedido abaixo
                           </Typography>
-                          <Typography variant="body1" gutterBottom>
-                            General information about the service
-                          </Typography>
-                        </div>
+                         </div>
+                        
+                         
+                         
+                        
+                        
+                            
                         <div>
+                          
                         <Button variant="outlined" size="large" className={classes.outlinedButtom}>
                           Edit
                         </Button>
                         </div>
                       </div>
                       <Grid item container xs={12}>
-                        <Grid item xs={6}>
-                          <Typography style={{textTransform: 'uppercase'}} color='secondary' gutterBottom>
-                            User
-                          </Typography>
-                          <Typography variant="h5" gutterBottom>
-                            John Doe
-                          </Typography>
+                        <Grid item xs={12}>
+                             < Typography style = {
+                               {
+                                 textTransform: 'uppercase',
+                                 marginBottom: 20
+                               }
+                             }
+                             color = 'secondary'
+                             gutterBottom >
+                               Tipo <
+                               /Typography>
+                           <FormControl variant="outlined" className={classes.formControl}>
+                            <Select
+                              value={this.state.receivingAccount}
+                              onChange={this.handleChange}
+                              input={
+                                <OutlinedInput
+                                  labelWidth={this.state.labelWidth}
+                                  name="receivingAccount"
+                                />
+                              }
+                            >
+                              <MenuItem value="">
+                                <em></em>
+                              </MenuItem>
+                              <MenuItem value={'0297 00988200918'}>Venda</MenuItem>
+                              <MenuItem value={'0235 00235233332'}>Bonificação</MenuItem>
+                              <MenuItem value={'1256 00864222212'}>Industrialização</MenuItem>
+                              <MenuItem value={'1256 00864222212'}>Consumo</MenuItem>
+                            </Select>
+                          </FormControl>
+                         
                         </Grid>
-                        <Grid item xs={6}>
-                          <Typography style={{textTransform: 'uppercase'}} color='secondary' gutterBottom>
-                            City
-                          </Typography>
-                          <Typography variant="h5" gutterBottom>
-                            Tokyo
-                          </Typography>
-                        </Grid>
+                       
                       </Grid>
                     </Paper>
                     </div>
@@ -238,10 +260,10 @@ class Wizard extends Component {
                       <div>
                         <div style={{marginBottom: 32}}>
                           <Typography variant="subtitle1" style={{fontWeight: 'bold'}} gutterBottom>
-                            Bank information
+                            Escoha o Cliente
                           </Typography>
                           <Typography variant="body1" gutterBottom>
-                            Select account to receive the money
+                            Selecione o cliente para qual o pedido será enviado
                           </Typography>
                         </div>
                         <div style={{marginBottom: 32}}>
@@ -254,7 +276,7 @@ class Wizard extends Component {
                         </div>
                         <div>
                           <Typography style={{textTransform: 'uppercase', marginBottom: 20}} color='secondary' gutterBottom>
-                            Receiving account
+                            Cliente
                           </Typography>
                           <FormControl variant="outlined" className={classes.formControl}>
                             <Select
@@ -481,7 +503,7 @@ PLEASE NOTE: We reserve the right, at our sole discretion, to change, modify or 
                       className={classes.backButton}
                       size='large'
                       >
-                        Back
+                        Voltar
                       </Button>
                     )}
                     <Button
