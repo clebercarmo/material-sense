@@ -15,8 +15,12 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
+//import Select from '@material-ui/core/Select';
 import Back from './common/Back'
+import Select from "react-select";
+import api from "../services/api";
+import Spinner from "../loading";
+import swal from "sweetalert";
 
 const qs = require('query-string');
 const backgroundShape = require('../images/shape.svg');
@@ -96,26 +100,219 @@ const getSteps = () => {
   return [
     'Tipo Pedido',
     'Cliente',
-    'Loan details',
-    'Terms',
-    'Confirm',
-    'Done'
+    'Frete',
+    'Pagamento',
+    'Itens',
+    'Confirma'
   ];
 }
 
 class Wizard extends Component {
 
-  state = {
+  constructor(props) {
+    super(props);
+  this.state = {
     activeStep: 0,
     receivingAccount: 'Home Account',
     repaimentAccount: 'Saving Account',
     termsChecked: false,
-    labelWidth: 0
+    labelWidth: 0,
+     cod_cliente: "",
+       tab_preco: "",
+       cod_tp_pedido: "",
+       cod_pagamento: "",
+       cod_frete: "",
+       produtos: [],
+       clientes: [],
+       tipo_pedido: [{
+           value: "V",
+           label: "Venda"
+         },
+         {
+           value: "B",
+           label: "Bonificação"
+         },
+         {
+           value: "C",
+           label: "Consumo"
+         },
+         {
+           value: "I",
+           label: "Industrialização"
+         }
+       ],
+       tipo_pedido_escolhido: "",
+       pagamento: [],
+       frete: [{
+           value: "CIF",
+           label: "Ingleza entrega - (CIF)"
+         },
+         {
+           value: "FOB",
+           label: "Cliente retira - (FOB)"
+         }
+       ],
+       tabelaprecocliente: "",
+       descontocanal: null,
+       loading: false,
+       isBonificacao: false,
+       isescolheucliente: false,
+       mensagem: "",
+       precotabela: null,
+       produto: null,
+       produtoscarrinho: [],
+       produtoslocalstorge: null,
+       descontoitem: "0",
+       descontocampanha: "0",
+       quantidadeitem: null,
+       open: false,
+       checked: false,
+       temproduto: false,
+       mensagemloader: "",
+       tipopedidodescricao: "",
+       escolheutipopedido: false,
+       appaberto: false,
+       pedidoemandamento: false,
+       dadosusuariologado: null,
+       pedidoclientefinalizado: null,
+       forma_pagamento_escolhida: null,
+       pedidoorigeminformado: "",
+       pedidos: []
+  }
+}
+
+  async componentDidMount() {
+    let dadosusuario = await this.lerValores("USUARIO");
+    this.setState({
+      dadosusuariologado: JSON.parse(dadosusuario)
+    });
+    
+    
   }
 
-  componentDidMount() {
+  lerValores = async valor => await localStorage.getItem(valor);
 
-  }
+   cargaclientes = async () => {
+     this.setState({
+       mensagemloader: "Carregamento Clientes",
+       loading: true
+     });
+
+     const response = await api.post(
+       "http://localhost:4000/meusclientes", {
+         cod_representante: this.state.dadosusuariologado.codrepresentante
+       }, {}
+     );
+
+     this.setState({
+       clientes: response.data.ttRetorno,
+       loading: false
+     });
+     //this.handleClose();
+   };
+
+    handleTipoPedido = async e => {
+      if (e.value === "B") {
+        this.setState({
+          isBonificacao: true,
+          tipopedidodescricao: "Pedido de Bonificação",
+          tipo_pedido_escolhido: "B"
+        });
+      }
+
+      if (e.value === "V") {
+        this.setState({
+          isBonificacao: false,
+          tipopedidodescricao: "Pedido de Venda",
+          tipo_pedido_escolhido: "V"
+        });
+      }
+
+      if (e.value === "C") {
+        this.setState({
+          isBonificacao: false,
+          tipopedidodescricao: "Pedido de Consumo",
+          tipo_pedido_escolhido: "C"
+        });
+      }
+
+      if (e.value === "I") {
+        this.setState({
+          isBonificacao: false,
+          tipopedidodescricao: "Pedido de Industrialização",
+          tipo_pedido_escolhido: "I"
+        });
+      }
+      this.setState({
+        cod_tp_pedido: e.value,
+        escolheutipopedido: true
+      });
+      await this.cargaclientes();
+    };
+
+  handleCliente = async e => {
+    try {
+      this.setState({
+        loading: true
+      });
+      await this.cargaformapagamento(e.value);
+      await this.cargaitens(e.tabeladepreco);
+      this.setState({
+        loading: false,
+        cod_cliente: e.value,
+        tabelaprecocliente: e.tabeladepreco,
+        descontocanal: e.descontocanal,
+        isescolheucliente: true
+      });
+      /*
+      this.setState({
+        cod_cliente: e.value,
+        tabelaprecocliente: e.tabeladepreco,
+        descontocanal: e.descontocanal,
+        isescolheucliente: true
+      });*/
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  cargaitens = async cliente => {
+    this.setState({
+      mensagemloader: "Carregamento Itens da Tabela de Preço"
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/itemvenda", {
+        tabpreco: cliente
+      }, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    this.setState({
+      produtos: response.data.ttRetorno
+    });
+  };
+
+  cargaformapagamento = async cliente => {
+    this.setState({
+      mensagemloader: "Carregando forma de pagamento do cliente"
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/formapagamento", {
+        cod_representante: cliente
+      }, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    this.setState({
+      pagamento: response.data.ttRetorno
+    });
+  };
 
   handleNext = () => {
     this.setState(state => ({
@@ -151,7 +348,7 @@ class Wizard extends Component {
       return 'Enviar';
     }
     if(this.state.activeStep === 5) {
-      return 'Done';
+      return 'Enviar Pedido';
     }
     return 'Avançar';
   }
@@ -178,6 +375,10 @@ class Wizard extends Component {
         <CssBaseline />
         <div className={classes.root}>
           <Grid container justify="center">
+            < Spinner isFetching = {
+              this.state.loading
+            }
+            color = "#5A6AAA" / >
             <Grid spacing={24} alignItems="center" justify="center" container className={classes.grid}>
               <Grid item xs={12}>
                 <Back />
@@ -202,22 +403,15 @@ class Wizard extends Component {
                             Escolha o tipo do pedido abaixo
                           </Typography>
                          </div>
-                        
-                         
-                         
-                        
-                        
-                            
                         <div>
-                          
                         <Button variant="outlined" size="large" className={classes.outlinedButtom}>
-                          Edit
+                          Ultimos Pedidos
                         </Button>
                         </div>
                       </div>
                       <Grid item container xs={12}>
                         <Grid item xs={12}>
-                             < Typography style = {
+                             <Typography style = {
                                {
                                  textTransform: 'uppercase',
                                  marginBottom: 20
@@ -225,27 +419,15 @@ class Wizard extends Component {
                              }
                              color = 'secondary'
                              gutterBottom >
-                               Tipo <
-                               /Typography>
+                               Tipo </Typography>
                            <FormControl variant="outlined" className={classes.formControl}>
-                            <Select
-                              value={this.state.receivingAccount}
-                              onChange={this.handleChange}
-                              input={
-                                <OutlinedInput
-                                  labelWidth={this.state.labelWidth}
-                                  name="receivingAccount"
-                                />
-                              }
-                            >
-                              <MenuItem value="">
-                                <em></em>
-                              </MenuItem>
-                              <MenuItem value={'0297 00988200918'}>Venda</MenuItem>
-                              <MenuItem value={'0235 00235233332'}>Bonificação</MenuItem>
-                              <MenuItem value={'1256 00864222212'}>Industrialização</MenuItem>
-                              <MenuItem value={'1256 00864222212'}>Consumo</MenuItem>
-                            </Select>
+                              <Select
+                                onChange={this.handleTipoPedido}
+                                options={this.state.tipo_pedido}
+                                isLoading={this.state.loading}
+                                isDisabled={this.state.temproduto}
+                              ></Select>
+                          
                           </FormControl>
                          
                         </Grid>
@@ -266,36 +448,16 @@ class Wizard extends Component {
                             Selecione o cliente para qual o pedido será enviado
                           </Typography>
                         </div>
-                        <div style={{marginBottom: 32}}>
-                          <Typography style={{textTransform: 'uppercase'}} color='secondary' gutterBottom>
-                            Bank
-                          </Typography>
-                          <Typography variant="h5" gutterBottom>
-                            N26
-                          </Typography>
-                        </div>
                         <div>
                           <Typography style={{textTransform: 'uppercase', marginBottom: 20}} color='secondary' gutterBottom>
                             Cliente
                           </Typography>
                           <FormControl variant="outlined" className={classes.formControl}>
                             <Select
-                              value={this.state.receivingAccount}
-                              onChange={this.handleChange}
-                              input={
-                                <OutlinedInput
-                                  labelWidth={this.state.labelWidth}
-                                  name="receivingAccount"
-                                />
-                              }
-                            >
-                              <MenuItem value="">
-                                <em></em>
-                              </MenuItem>
-                              <MenuItem value={'0297 00988200918'}>First account</MenuItem>
-                              <MenuItem value={'0235 00235233332'}>Second account</MenuItem>
-                              <MenuItem value={'1256 00864222212'}>Third account</MenuItem>
-                            </Select>
+                            onChange={this.handleCliente}
+                            options={this.state.clientes}
+                            isDisabled={this.state.temproduto}
+                          ></Select>
                           </FormControl>
                         </div>
                       </div>

@@ -38,7 +38,7 @@ class Cards extends Component {
           <Grid container justify="center"> 
             <Grid spacing={24} alignItems="center" justify="center" container className={classes.grid}>
               <Grid item xs={12}>
-                <SectionHeader title="Cards" subtitle="One page with a list of a collection" />
+                <SectionHeader title="Ultimos Pedidos" subtitle="Ultimos pedidose enviados, para melhor detalhe favor usar o filtro ao lado." />
                 <CardItem />
               </Grid>
             </Grid>

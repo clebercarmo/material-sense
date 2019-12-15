@@ -12,6 +12,9 @@ import SimpleLineChart from './SimpleLineChart';
 import Months from './common/Months';
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import Loading from './common/Loading';
+import MUIDataTable from "mui-datatables";
+import api from "../services/api";
+import Spinner from "../loading";
 
 import Topbar from './Topbar';
 
@@ -113,7 +116,6 @@ const styles = theme => ({
 const monthRange = Months;
 
 class Dashboard extends Component {
-
   state = {
     loading: true,
     amount: 15000,
@@ -123,70 +125,159 @@ class Dashboard extends Component {
     totalInterest: 0,
     monthlyPayment: 0,
     totalPayment: 0,
-    data: []
+    data: [],
+    dadosusuariologado: null
+  };
+
+  lerValores = async valor => await localStorage.getItem(valor);
+
+  ultimospedidos = async () => {
+    this.setState({
+      loading: true
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/pedido",
+      { cod_representante: this.state.dadosusuariologado.codrepresentante },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    console.log(response.data.ttRetorno);
+    this.setState({
+      loading: false,
+      pedidos: response.data.ttRetorno
+      //aprovados: response.data.ttRetorno[0].aprovadospie,
+      //aguardandoatendimento: response.data.ttRetorno[0].aquardandoatendimentopie
+    });
   };
 
   updateValues() {
     const { amount, period, start } = this.state;
-    const monthlyInterest = (amount)*(Math.pow(0.01*(1.01), period))/(Math.pow(0.01, period - 1))
+    const monthlyInterest =
+      (amount * Math.pow(0.01 * 1.01, period)) / Math.pow(0.01, period - 1);
     const totalInterest = monthlyInterest * (period + start);
     const totalPayment = amount + totalInterest;
-    const monthlyPayment = period > start ? totalPayment/(period - start) : totalPayment/(period)
+    const monthlyPayment =
+      period > start ? totalPayment / (period - start) : totalPayment / period;
 
-    const data = Array.from({length: period + start}, (value, i) => {
+    const data = Array.from({ length: period + start }, (value, i) => {
       const delayed = i < start;
       return {
         name: monthRange[i],
-        'Type': delayed ? 0 : Math.ceil(monthlyPayment).toFixed(0),
-        'OtherType': Math.ceil(monthlyInterest).toFixed(0)
-      }
-    })
+        Type: delayed ? 0 : Math.ceil(monthlyPayment).toFixed(0),
+        OtherType: Math.ceil(monthlyInterest).toFixed(0)
+      };
+    });
 
-    this.setState({monthlyInterest, totalInterest, totalPayment, monthlyPayment, data})
+    this.setState({
+      monthlyInterest,
+      totalInterest,
+      totalPayment,
+      monthlyPayment,
+      data
+    });
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    let dadosusuario = await this.lerValores("USUARIO");
+    this.setState({
+      dadosusuariologado: JSON.parse(dadosusuario)
+    });
+    await this.ultimospedidos();
     this.updateValues();
   }
 
   handleChangeAmount = (event, value) => {
-    this.setState({amount: value, loading: false});
+    this.setState({ amount: value, loading: false });
     this.updateValues();
-  }
+  };
 
   handleChangePeriod = (event, value) => {
-    this.setState({period: value, loading: false});
+    this.setState({ period: value, loading: false });
     this.updateValues();
-  }
+  };
 
   handleChangeStart = (event, value) => {
-    this.setState({start: value, loading: false});
+    this.setState({ start: value, loading: false });
     this.updateValues();
-  }
+  };
 
   render() {
     const { classes } = this.props;
-    const { amount, period, start, monthlyPayment,
-      monthlyInterest, data, loading } = this.state;
-    const currentPath = this.props.location.pathname
+    const {
+      amount,
+      period,
+      start,
+      monthlyPayment,
+      monthlyInterest,
+      data,
+      loading
+    } = this.state;
+    const currentPath = this.props.location.pathname;
+
+    const options = {
+      filter: true,
+      filterType: "dropdown",
+      responsive: "stacked",
+      onRowClick: (rowData, rowState) => {
+        console.log(rowData, rowState);
+      }
+    };
+
+    const columns = [
+      {
+        name: "nrpedcli",
+        label: "Pedido",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "cliente",
+        label: "Cliente",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "cod_sit_str",
+        label: "Situação",
+       
+      }
+    ];
 
     return (
       <React.Fragment>
         <CssBaseline />
         <Topbar currentPath={currentPath} />
         <div className={classes.root}>
-          <Grid container justify="center" >
-            <Grid spacing={24} alignItems="center" justify="center" container className={classes.grid}>
+          <Grid container justify="center">
+            <Spinner isFetching={this.state.loading} color="#5A6AAA" />
+            <Grid
+              spacing={24}
+              alignItems="center"
+              justify="center"
+              container
+              className={classes.grid}
+            >
               <Grid item xs={12}>
                 <div className={classes.topBar}>
                   <div className={classes.block}>
-                    <Typography variant="h6" gutterBottom>Dashboard</Typography>
+                    <Typography variant="h6" gutterBottom>
+                      Dashboard
+                    </Typography>
                     <Typography variant="body1">
                       Posicionamento de suas vendas.
                     </Typography>
                   </div>
                   <div>
-                    <Button variant="outlined" className={classes.outlinedButtom}>
+                    <Button
+                      variant="outlined"
+                      className={classes.outlinedButtom}
+                    >
                       Relatorio de Vendas
                     </Button>
                   </div>
@@ -202,7 +293,7 @@ class Dashboard extends Component {
                       Use slider to set the amount you need.
                     </Typography>
                     <div className={classes.blockCenter}>
-                      <Typography color='secondary' variant="h6" gutterBottom>
+                      <Typography color="secondary" variant="h6" gutterBottom>
                         {numeral(amount).format()} USD
                       </Typography>
                     </div>
@@ -217,14 +308,10 @@ class Dashboard extends Component {
                     </div>
                     <div className={classes.rangeLabel}>
                       <div>
-                        <Typography variant="subtitle2">
-                          15,000 USD
-                        </Typography>
+                        <Typography variant="subtitle2">15,000 USD</Typography>
                       </div>
                       <div>
-                        <Typography variant="subtitle2">
-                          150,000 USD
-                        </Typography>
+                        <Typography variant="subtitle2">150,000 USD</Typography>
                       </div>
                     </div>
                   </div>
@@ -236,11 +323,9 @@ class Dashboard extends Component {
                     <Typography variant="subtitle1" gutterBottom>
                       Period
                     </Typography>
-                    <Typography variant="body1">
-                      A sample period
-                    </Typography>
+                    <Typography variant="body1">A sample period</Typography>
                     <div className={classes.blockCenter}>
-                      <Typography color='secondary' variant="h6" gutterBottom>
+                      <Typography color="secondary" variant="h6" gutterBottom>
                         {period} months
                       </Typography>
                     </div>
@@ -255,14 +340,10 @@ class Dashboard extends Component {
                     </div>
                     <div className={classes.rangeLabel}>
                       <div>
-                        <Typography variant="subtitle2">
-                          1 month
-                        </Typography>
+                        <Typography variant="subtitle2">1 month</Typography>
                       </div>
                       <div>
-                        <Typography variant="subtitle2">
-                          6 months
-                        </Typography>
+                        <Typography variant="subtitle2">6 months</Typography>
                       </div>
                     </div>
                   </div>
@@ -278,7 +359,7 @@ class Dashboard extends Component {
                       Set your preferred start date.
                     </Typography>
                     <div className={classes.blockCenter}>
-                      <Typography color='secondary' variant="h6" gutterBottom>
+                      <Typography color="secondary" variant="h6" gutterBottom>
                         {monthRange[start]}
                       </Typography>
                     </div>
@@ -293,86 +374,136 @@ class Dashboard extends Component {
                     </div>
                     <div className={classes.rangeLabel}>
                       <div>
-                        <Typography variant="subtitle2">
-                          Dec 2018
-                        </Typography>
+                        <Typography variant="subtitle2">Dec 2018</Typography>
                       </div>
                       <div>
-                        <Typography variant="subtitle2">
-                          May 2019
-                        </Typography>
+                        <Typography variant="subtitle2">May 2019</Typography>
                       </div>
                     </div>
                   </div>
                 </Paper>
               </Grid>
               <Grid container spacing={4} justify="center">
-                <Grid item xs={12} md={8} >
-                  <Paper className={classes.paper} style={{position: 'relative'}}>
+                <Grid item xs={12} md={8}>
+                  <Paper
+                    className={classes.paper}
+                    style={{ position: "relative" }}
+                  >
                     <Loading loading={loading} />
-                    <div className={loading ? classes.loadingState : ''}>
+                    <div className={loading ? classes.loadingState : ""}>
                       <Typography variant="subtitle1" gutterBottom>
                         Some details
                       </Typography>
                       <Typography variant="body1">
                         Details about the graph
                       </Typography>
-                      <div style={{marginTop: 14, marginBottom: 14}}>
+                      <div style={{ marginTop: 14, marginBottom: 14 }}>
                         <div className={classes.inlining}>
                           <Avatar className={classes.loanAvatar}></Avatar>
-                          <Typography className={classes.inlining} variant="subtitle2" gutterBottom>
+                          <Typography
+                            className={classes.inlining}
+                            variant="subtitle2"
+                            gutterBottom
+                          >
                             Type
                           </Typography>
-                          <Typography className={classes.inlining} color='secondary' variant="h6" gutterBottom>
+                          <Typography
+                            className={classes.inlining}
+                            color="secondary"
+                            variant="h6"
+                            gutterBottom
+                          >
                             {numeral(monthlyPayment).format()} units
                           </Typography>
                         </div>
                         <div className={classes.inlining}>
                           <Avatar className={classes.interestAvatar}></Avatar>
-                          <Typography className={classes.inlining} variant="subtitle2" gutterBottom>
+                          <Typography
+                            className={classes.inlining}
+                            variant="subtitle2"
+                            gutterBottom
+                          >
                             Othe type
                           </Typography>
-                          <Typography className={classes.inlining} color="secondary" variant="h6" gutterBottom>
+                          <Typography
+                            className={classes.inlining}
+                            color="secondary"
+                            variant="h6"
+                            gutterBottom
+                          >
                             {numeral(monthlyInterest).format()} units
                           </Typography>
                         </div>
                       </div>
-                      <div >
+                      <div>
                         <SimpleLineChart data={data} />
                       </div>
                     </div>
                   </Paper>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Paper className={classes.paper} style={{position: 'relative'}}>
-                  <Loading loading={loading} />
-                  <div className={loading ? classes.loadingState : ''}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      State
-                    </Typography>
-                    <div className={classes.mainBadge}>
-                      <VerifiedUserIcon style={{fontSize: 72}} fontSize={'large'} color={'secondary'} />
-                      <Typography variant="h5" color={'secondary'} gutterBottom>
-                        Verified
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Paper
+                    className={classes.paper}
+                    style={{ position: "relative" }}
+                  >
+                    <Loading loading={loading} />
+                    <div className={loading ? classes.loadingState : ""}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        State
                       </Typography>
+                      <div className={classes.mainBadge}>
+                        <VerifiedUserIcon
+                          style={{ fontSize: 72 }}
+                          fontSize={"large"}
+                          color={"secondary"}
+                        />
+                        <Typography
+                          variant="h5"
+                          color={"secondary"}
+                          gutterBottom
+                        >
+                          Verified
+                        </Typography>
+                      </div>
+                      <div className={classes.buttonBar}>
+                        <Button
+                          to={{ pathname: "/dashboard", search: `?type=save` }}
+                          component={Link}
+                          variant="outlined"
+                          className={classes.actionButtom}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          to={{ pathname: "/dashboard", search: `?type=apply` }}
+                          component={Link}
+                          color="primary"
+                          variant="contained"
+                          className={classes.actionButtom}
+                        >
+                          Apply
+                        </Button>
+                      </div>
                     </div>
-                    <div className={classes.buttonBar}>
-                      <Button to={{ pathname: "/dashboard", search: `?type=save` }} component={Link} variant="outlined" className={classes.actionButtom}>
-                        Save
-                      </Button>
-                      <Button to={{ pathname: "/dashboard", search: `?type=apply` }} component={Link} color='primary' variant="contained" className={classes.actionButtom}>
-                        Apply
-                      </Button>
-                    </div>
-                  </div>
                   </Paper>
                 </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Paper className={classes.paper}>
+                  <MUIDataTable
+                    title={"Meus Ultimos Pedidos"}
+                    className={classes.card}
+                    data={this.state.pedidos}
+                    columns={columns}
+                    options={options}
+                  />
+                </Paper>
               </Grid>
             </Grid>
           </Grid>
         </div>
       </React.Fragment>
-    )
+    );
   }
 }
 

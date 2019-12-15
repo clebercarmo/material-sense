@@ -81,9 +81,15 @@ const styles = theme => ({
 
 class Topbar extends Component {
 
+  constructor(props){
+    super(props);
+    
+  }
+
   state = {
     value: 0,
-    menuDrawer: false
+    menuDrawer: false,
+    dadosusuariologado: null
   };
 
   handleChange = (event, value) => {
@@ -98,7 +104,16 @@ class Topbar extends Component {
     this.setState({ menuDrawer: false });
   }
 
-  componentDidMount() {
+  lerValores = async valor => await localStorage.getItem(valor);
+
+
+
+  async componentDidMount() {
+   
+     let dadosusuario = await this.lerValores("USUARIO");
+     this.setState({
+       dadosusuariologado: JSON.parse(dadosusuario)
+     });
     window.scrollTo(0, 0);
   }
 
@@ -142,7 +157,14 @@ class Topbar extends Component {
                     <React.Fragment>
                       <div className={classes.productLogo}>
                         <Typography>
-                          Venda Direta
+                           {
+                             this.state.dadosusuariologado !== null  && (
+                               this.state.dadosusuariologado.nomerepresentante
+                             )
+                           }
+                        
+                         
+                          
                         </Typography>
                       </div>
                       <div className={classes.iconContainer}>

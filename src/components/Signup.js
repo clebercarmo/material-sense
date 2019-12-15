@@ -102,9 +102,9 @@ const styles = theme => ({
 
 const getSteps = () => {
   return [
-    'User',
-    'Signin',
-    'Permission'
+    'Escolha sua Opção',
+    'Insira os dados',
+    'Permissão'
   ];
 }
 
@@ -153,15 +153,15 @@ class Signup extends Component {
 
   stepActions() {
     if(this.state.activeStep === 0) {
-      return 'Sign in';
+      return 'Avançar';
     }
     if(this.state.activeStep === 1) {
-      return 'Next';
+      return 'Próximo';
     }
     if(this.state.activeStep === 2) {
-      return 'Accept';
+      return 'Aceitar';
     }
-    return 'Next';
+    return 'Próximo';
   }
 
   render() {
@@ -199,15 +199,15 @@ class Signup extends Component {
                       <div>
                         <div style={{marginBottom: 32}}>
                           <Typography variant="subtitle1" style={{fontWeight: 'bold'}} gutterBottom>
-                            Select
+                            Opção
                           </Typography>
                           <Typography variant="body1" gutterBottom>
-                            A item to select
+                            Escolha uma opção da lista abaixo
                           </Typography>
                         </div>
                         <div>
                           <Typography style={{textTransform: 'uppercase', marginBottom: 20}} color='secondary' gutterBottom>
-                            First options
+                            Opções Disponiveis
                           </Typography>
                           <FormControl variant="outlined" className={classes.formControl}>
                             <Select
@@ -221,10 +221,10 @@ class Signup extends Component {
                               }
                             >
                               <MenuItem value="">
-                                <em>Select some option</em>
+                                <em>Selecione uma opção</em>
                               </MenuItem>
-                              <MenuItem value={'first'}>Option 1</MenuItem>
-                              <MenuItem value={'second'}>Other option</MenuItem>
+                              <MenuItem value={'first'}>Alteração de Senha</MenuItem>
+                              <MenuItem value={'second'}>Troca de Perfil</MenuItem>
                             </Select>
                           </FormControl>
                         </div>
@@ -324,7 +324,7 @@ class Signup extends Component {
                        className={classes.backButton}
                        size='large'
                        >
-                         Back
+                         Voltar
                        </Button>
                      ) : (
                        <Button
@@ -333,7 +333,7 @@ class Signup extends Component {
                        className={classes.backButton}
                        size='large'
                        >
-                         Cancel
+                         Cancelar
                        </Button>
                      )}
                      <Button
