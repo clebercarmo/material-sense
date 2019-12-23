@@ -283,106 +283,6 @@ class Dashboard extends Component {
                   </div>
                 </div>
               </Grid>
-              <Grid item xs={12} md={4}>
-                <Paper className={classes.paper}>
-                  <div>
-                    <Typography variant="subtitle1" gutterBottom>
-                      How much you want to transfer
-                    </Typography>
-                    <Typography variant="body1">
-                      Use slider to set the amount you need.
-                    </Typography>
-                    <div className={classes.blockCenter}>
-                      <Typography color="secondary" variant="h6" gutterBottom>
-                        {numeral(amount).format()} USD
-                      </Typography>
-                    </div>
-                    <div>
-                      <Slider
-                        value={amount}
-                        min={20000}
-                        max={150000}
-                        step={15000}
-                        onChange={this.handleChangeAmount}
-                      />
-                    </div>
-                    <div className={classes.rangeLabel}>
-                      <div>
-                        <Typography variant="subtitle2">15,000 USD</Typography>
-                      </div>
-                      <div>
-                        <Typography variant="subtitle2">150,000 USD</Typography>
-                      </div>
-                    </div>
-                  </div>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Paper className={classes.paper}>
-                  <div>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Period
-                    </Typography>
-                    <Typography variant="body1">A sample period</Typography>
-                    <div className={classes.blockCenter}>
-                      <Typography color="secondary" variant="h6" gutterBottom>
-                        {period} months
-                      </Typography>
-                    </div>
-                    <div>
-                      <Slider
-                        value={period}
-                        min={1}
-                        max={6}
-                        step={1}
-                        onChange={this.handleChangePeriod}
-                      />
-                    </div>
-                    <div className={classes.rangeLabel}>
-                      <div>
-                        <Typography variant="subtitle2">1 month</Typography>
-                      </div>
-                      <div>
-                        <Typography variant="subtitle2">6 months</Typography>
-                      </div>
-                    </div>
-                  </div>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Paper className={classes.paper}>
-                  <div>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Start date
-                    </Typography>
-                    <Typography variant="body1">
-                      Set your preferred start date.
-                    </Typography>
-                    <div className={classes.blockCenter}>
-                      <Typography color="secondary" variant="h6" gutterBottom>
-                        {monthRange[start]}
-                      </Typography>
-                    </div>
-                    <div>
-                      <Slider
-                        value={start}
-                        min={0}
-                        max={5}
-                        step={1}
-                        onChange={this.handleChangeStart}
-                      />
-                    </div>
-                    <div className={classes.rangeLabel}>
-                      <div>
-                        <Typography variant="subtitle2">Dec 2018</Typography>
-                      </div>
-                      <div>
-                        <Typography variant="subtitle2">May 2019</Typography>
-                      </div>
-                    </div>
-                  </div>
-                </Paper>
-              </Grid>
               <Grid container spacing={4} justify="center">
                 <Grid item xs={12} md={8}>
                   <Paper
@@ -392,10 +292,10 @@ class Dashboard extends Component {
                     <Loading loading={loading} />
                     <div className={loading ? classes.loadingState : ""}>
                       <Typography variant="subtitle1" gutterBottom>
-                        Some details
+                        Situação
                       </Typography>
                       <Typography variant="body1">
-                        Details about the graph
+                        Detalhe sobre o andamento dos pedidos enviados
                       </Typography>
                       <div style={{ marginTop: 14, marginBottom: 14 }}>
                         <div className={classes.inlining}>
@@ -449,7 +349,7 @@ class Dashboard extends Component {
                     <Loading loading={loading} />
                     <div className={loading ? classes.loadingState : ""}>
                       <Typography variant="subtitle1" gutterBottom>
-                        State
+                        Notificações
                       </Typography>
                       <div className={classes.mainBadge}>
                         <VerifiedUserIcon
@@ -462,7 +362,7 @@ class Dashboard extends Component {
                           color={"secondary"}
                           gutterBottom
                         >
-                          Verified
+                          8 pedidos com pendências
                         </Typography>
                       </div>
                       <div className={classes.buttonBar}>
@@ -472,16 +372,16 @@ class Dashboard extends Component {
                           variant="outlined"
                           className={classes.actionButtom}
                         >
-                          Save
+                          Cancelar
                         </Button>
                         <Button
-                          to={{ pathname: "/dashboard", search: `?type=apply` }}
+                          to={{ pathname: "/cards", search: `?type=apply` }}
                           component={Link}
                           color="primary"
                           variant="contained"
                           className={classes.actionButtom}
                         >
-                          Apply
+                          Verificar
                         </Button>
                       </div>
                     </div>
@@ -489,14 +389,20 @@ class Dashboard extends Component {
                 </Grid>
               </Grid>
               <Grid item xs={12}>
-                <Paper className={classes.paper}>
-                  <MUIDataTable
-                    title={"Meus Ultimos Pedidos"}
-                    className={classes.card}
-                    data={this.state.pedidos}
-                    columns={columns}
-                    options={options}
-                  />
+                <Paper
+                  className={classes.paper}
+                  style={{ position: "relative" }}
+                >
+                  <Loading loading={loading} />
+                  <div className={loading ? classes.loadingState : ""}>
+                    <MUIDataTable
+                      title={"Meus Ultimos Pedidos"}
+                      className={classes.card}
+                      data={this.state.pedidos}
+                      columns={columns}
+                      options={options}
+                    />
+                  </div>
                 </Paper>
               </Grid>
             </Grid>

@@ -1,4 +1,4 @@
-import PacmanLoader from "react-spinners/PacmanLoader";
+import SyncLoader from "react-spinners/SyncLoader";
 import React from "react";
 
 const Spinner = props => {
@@ -10,8 +10,10 @@ const Spinner = props => {
   };
   return (
     <div style={style}>
-      < PacmanLoader color = {props.color}
-      size='40'
+      < SyncLoader color = {
+        props.color
+      }
+      size='25'
       loading = {
         props.isFetching
       }

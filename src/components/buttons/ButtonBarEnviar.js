@@ -15,7 +15,7 @@ const styles = theme => ({
   }
 })
 
-class ButtonBar extends Component {
+class ButtonBarEnviar extends Component {
 
   render() {
     const { classes } = this.props;
@@ -32,11 +32,11 @@ class ButtonBar extends Component {
           color="primary"
           className={classes.secondary}
         >
-          Detalhe
+          Enviar
         </Button>
       </div>
     )
   }
 }
 
-export default withStyles(styles)(ButtonBar);
+export default withStyles(styles)(ButtonBarEnviar);

@@ -93,7 +93,7 @@ class SignIn extends Component {
               })
             }
           />
-          <button type="submit"> Entrar </button> <hr />
+          <button type="submit"> Entrar </button>
         </Form>
       </Container>
     );

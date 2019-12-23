@@ -87,7 +87,7 @@ class CardItem extends Component {
             <div className={classes.baseline}>
               <div className={classes.inline}>
                 <Typography style={{ textTransform: 'uppercase' }} color='secondary' gutterBottom>
-                  Months
+                  Data
                 </Typography>
                 <Typography variant="h6" gutterBottom>
                   4 month(s)
@@ -95,7 +95,7 @@ class CardItem extends Component {
               </div>
               <div className={classes.inline}>
                 <Typography style={{ textTransform: 'uppercase' }} color='secondary' gutterBottom>
-                  Creation date
+                  Pedido
                 </Typography>
                 <Typography variant="h6" gutterBottom>
                   01 February 2019
@@ -103,7 +103,7 @@ class CardItem extends Component {
               </div>
               <div className={classes.inline}>
                 <Typography style={{ textTransform: 'uppercase' }} color='secondary' gutterBottom>
-                  Amount
+                  Cliente
                 </Typography>
                 <Typography variant="h6" gutterBottom>
                   6,600 USD
@@ -112,7 +112,7 @@ class CardItem extends Component {
             </div>
             <div className={classes.inlineRight}>
               <Typography style={{ textTransform: 'uppercase' }} color='secondary' gutterBottom>
-                Other Amount
+                Situação
               </Typography>
               <Typography variant="h4" gutterBottom>
                 Once a month

@@ -16,7 +16,7 @@ const Menu = [
     pathname: "/wizard"
   },
   {
-    label: "Ultimos Pedidos",
+    label: "Relatório de Vendas",
     pathname: "/cards"
   },
   {
