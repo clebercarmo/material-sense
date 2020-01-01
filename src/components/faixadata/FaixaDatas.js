@@ -1,30 +1,37 @@
 import "date-fns";
+
 import React from "react";
 import Grid from "@material-ui/core/Grid";
 import DateFnsUtils from "@date-io/date-fns";
+import ptLocale from "date-fns/locale/pt-BR";
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
 } from "@material-ui/pickers";
 import ButtonBarEnviar from "../buttons/ButtonBarEnviar";
 import Typography from "@material-ui/core/Typography";
+import Paper from "@material-ui/core/Paper";
 
-export default function FaixaDatas() {
+export default function FaixaDatas(props) {
+  const { dtinicio, dtfim, click } = props;
+
   // The first commit of Material-UI
-  const [selectedDate, setSelectedDate] = React.useState(
-    new Date("2014-08-18T21:11:54")
-  );
+  const [selectedDate, setSelectedDate] = React.useState(new Date());
 
   const handleDataInicio = date => {
+    props.dtinicio(date);
+
     setSelectedDate(date);
   };
 
-    const handleDataFim = date => {
-      setSelectedDate(date);
-    };
+  const handleDataFim = date => {
+    props.dtfim(date);
+
+    setSelectedDate(date);
+  };
 
   return (
-    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+    <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptLocale}>
       <Typography
         style={{ textTransform: "uppercase" }}
         color="secondary"
@@ -55,7 +62,7 @@ export default function FaixaDatas() {
             "aria-label": "change date"
           }}
         />
-        <ButtonBarEnviar></ButtonBarEnviar>
+        <ButtonBarEnviar click={props.click}> </ButtonBarEnviar>
       </Grid>
     </MuiPickersUtilsProvider>
   );

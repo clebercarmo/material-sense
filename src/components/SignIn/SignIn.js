@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
-import { Form, Container, Imagem } from "./styles";
+import { withRouter } from "react-router-dom";
+import { Form, Container } from "./styles";
 import Logo from "../../images/fundo.png";
 import api from "../../services/api";
 import { login } from "../../services/auth";
@@ -22,7 +22,7 @@ class SignIn extends Component {
     const { usuario, senha } = this.state;
     if (!usuario || !senha) {
       this.setState({
-        error: "Preencha e-mail e senha para continuar!"
+        error: "Preencha usuário e senha para continuar!"
       });
     } else {
       try {

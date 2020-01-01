@@ -18,24 +18,21 @@ const styles = theme => ({
 class ButtonBarEnviar extends Component {
 
   render() {
-    const { classes } = this.props;
+    const { classes, click } = this.props;
 
     return (
       <div className={classes.spaceTop}>
-        <Button
-          className={classes.primary}
-        >
-          Cancelar
-        </Button>
+        <Button className={classes.primary}>Cancelar</Button>
         <Button
           variant="contained"
           color="primary"
           className={classes.secondary}
+          onClick={click}
         >
           Enviar
         </Button>
       </div>
-    )
+    );
   }
 }
 

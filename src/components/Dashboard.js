@@ -5,7 +5,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Slider from '@material-ui/core/Slider';
+//import Slider from '@material-ui/core/Slider';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
 import SimpleLineChart from './SimpleLineChart';
@@ -15,9 +15,13 @@ import Loading from './common/Loading';
 import MUIDataTable from "mui-datatables";
 import api from "../services/api";
 import Spinner from "../loading";
-
+import Chip from "@material-ui/core/Chip";
 import Topbar from './Topbar';
-
+import FindInPageIcon from '@material-ui/icons/FindInPage';
+import DoneIcon from "@material-ui/icons/Done";
+import NotInterestedIcon from "@material-ui/icons/NotInterested";
+import SwipeDialog from "./dialogs/SwipeDialog";
+import swal from "sweetalert";
 const numeral = require('numeral');
 numeral.defaultFormat('0,000');
 
@@ -26,18 +30,18 @@ const backgroundShape = require('../images/shape.svg');
 const styles = theme => ({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.grey['100'],
-    overflow: 'hidden',
+    backgroundColor: theme.palette.grey["100"],
+    overflow: "hidden",
     background: `url(${backgroundShape}) no-repeat`,
-    backgroundSize: 'cover',
-    backgroundPosition: '0 400px',
+    backgroundSize: "cover",
+    backgroundPosition: "0 400px",
     paddingBottom: 200
   },
   grid: {
     width: 1200,
     margin: `0 ${theme.spacing(2)}px`,
-    [theme.breakpoints.down('sm')]: {
-      width: 'calc(100% - 20px)'
+    [theme.breakpoints.down("sm")]: {
+      width: "calc(100% - 20px)"
     }
   },
   loadingState: {
@@ -46,39 +50,45 @@ const styles = theme => ({
   paper: {
     padding: theme.spacing(3),
     margin: theme.spacing(2),
-    textAlign: 'left',
+    textAlign: "left",
+    color: theme.palette.text.secondary
+  },
+  papermuitables: {
+    //padding: theme.spacing(3),
+    margin: theme.spacing(2),
+    //textAlign: "left",
     color: theme.palette.text.secondary
   },
   rangeLabel: {
-    display: 'flex',
-    justifyContent: 'space-between',
+    display: "flex",
+    justifyContent: "space-between",
     paddingTop: theme.spacing(2)
   },
   topBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
   },
   outlinedButtom: {
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     margin: theme.spacing(1)
   },
   actionButtom: {
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     margin: theme.spacing(1),
     width: 152,
     height: 36
   },
   blockCenter: {
     padding: theme.spacing(2),
-    textAlign: 'center'
+    textAlign: "center"
   },
   block: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(2)
   },
   loanAvatar: {
-    display: 'inline-block',
-    verticalAlign: 'center',
+    display: "inline-block",
+    verticalAlign: "center",
     width: 16,
     height: 16,
     marginRight: 10,
@@ -87,8 +97,8 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary.main
   },
   interestAvatar: {
-    display: 'inline-block',
-    verticalAlign: 'center',
+    display: "inline-block",
+    verticalAlign: "center",
     width: 16,
     height: 16,
     marginRight: 10,
@@ -97,17 +107,17 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary.light
   },
   inlining: {
-    display: 'inline-block',
+    display: "inline-block",
     marginRight: 10
   },
   buttonBar: {
-    display: 'flex'
+    display: "flex"
   },
   noBorder: {
-    borderBottomStyle: 'hidden'
+    borderBottomStyle: "hidden"
   },
   mainBadge: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4)
   }
@@ -118,6 +128,7 @@ const monthRange = Months;
 class Dashboard extends Component {
   state = {
     loading: true,
+    Pedidodialog: false,
     amount: 15000,
     period: 3,
     start: 0,
@@ -126,6 +137,9 @@ class Dashboard extends Component {
     monthlyPayment: 0,
     totalPayment: 0,
     data: [],
+    detalhepedido: [],
+    dadosgraficobarras: [],
+    listapedidossuspensos: [],
     dadosusuariologado: null
   };
 
@@ -146,13 +160,79 @@ class Dashboard extends Component {
       }
     );
     console.log(response.data.ttRetorno);
+    
+    let pedidossuspensos = response.data.ttRetorno.filter(pedido => {
+      return pedido.cod_sit_str === "Suspenso";
+    });
+
+
+    let aguardando_atendimento = response.data.ttRetorno.filter(x => {
+      return x.proxi_pendencia === "NA";
+    }).length;
+
+    let assessoria = response.data.ttRetorno.filter(x => {
+      return x.proxi_pendencia === "ASSESSORIA";
+    }).length;
+
+    let z = [
+      { Name: "Aguadando Atendimento", count: aguardando_atendimento },
+      { Name: "Assessoria", count: assessoria },
+      { Name: "Logistica", count: assessoria },
+      { Name: "Financeiro", count: assessoria }
+    ];
+   
+
+
     this.setState({
       loading: false,
-      pedidos: response.data.ttRetorno
+      listapedidossuspensos: pedidossuspensos,
+      pedidos: response.data.ttRetorno,
+      dadosgraficobarras: z
       //aprovados: response.data.ttRetorno[0].aprovadospie,
       //aguardandoatendimento: response.data.ttRetorno[0].aquardandoatendimentopie
     });
   };
+
+  detalhepedido = async (cliente, pedido) => {
+    this.setState({
+      loading: true
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/detalhe-pedido",
+      { pedido: pedido, nomeabrev: cliente },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    if (response.data.ttRetorno !== undefined) {
+      this.setState({
+        loading: false,
+        detalhepedido: response.data.ttRetorno
+        //aprovados: response.data.ttRetorno[0].aprovadospie,
+        //aguardandoatendimento: response.data.ttRetorno[0].aquardandoatendimentopie
+      });
+    }else{
+       this.setState({
+         loading: false
+        
+       });
+
+    }
+    
+  };
+
+  openDialog = event => {
+    this.setState({ learnMoredialog: true });
+  };
+
+  dialogClose = event => {
+    this.setState({ learnMoredialog: false });
+  };
+
+  
 
   updateValues() {
     const { amount, period, start } = this.state;
@@ -218,12 +298,58 @@ class Dashboard extends Component {
     } = this.state;
     const currentPath = this.props.location.pathname;
 
-    const options = {
+    const opcoesdetalhe = {
       filter: true,
+      print: false,
+      download: false,
+      viewColumns: false,
+      selectableRows: "none",
       filterType: "dropdown",
       responsive: "stacked",
-      onRowClick: (rowData, rowState) => {
+      rowsPerPage: 5
+    };
+
+    const options = {
+      filter: true,
+      print: false,
+      download: false,
+      viewColumns: false,
+      selectableRows: 'none',
+      filterType: "dropdown",
+      responsive: "stacked",
+      rowsPerPage: 10,
+      /*onRowClick: (rowData, rowState) => {
         console.log(rowData, rowState);
+      },*/
+      /*customRowRender: data => {
+          const [nrpedcli, cliente, cod_sit_str] = data;
+           return (
+             <tr key={nrpedcli}>
+               <td colSpan={4} >
+                 {nrpedcli}
+               </td>
+               <td colSpan={4}>
+                 {cliente}
+               </td>
+               <td colSpan={4} >
+                 {cod_sit_str}
+               </td>
+             </tr>
+           );
+
+       },*/
+      textLabels: {
+        pagination: {
+          next: "Próximo",
+          previous: "Anterior",
+          rowsPerPage: "linhas por Pagina:",
+          displayRows: "de"
+        },
+        filter: {
+          all: "Todos",
+          title: "FILTRO",
+          reset: "LIMPAR"
+        }
       }
     };
 
@@ -244,8 +370,161 @@ class Dashboard extends Component {
       },
       {
         name: "cod_sit_str",
-        label: "Situação",
-       
+        label: "Situação"
+      },
+      {
+        name: "atendido",
+        label: "Atendido",
+         options: {
+           customBodyRender: (value, tableMeta, updateValue) => { 
+             console.log(tableMeta.rowData[3]);
+             if (tableMeta.rowData[3] === "sim"){
+              return (
+                <Chip
+                  label="Sim"
+                  color="primary"
+                  style={{ backgroundColor: "#04BF33" }}
+                />
+              );
+             }else{
+                return (
+                  <Chip
+                    label="Não"
+                    color="primary"
+                    style={{ backgroundColor: "#F23005" }}
+                  />
+                );
+             }
+
+           }
+         }
+      },
+      {
+        name: "Detalhe",
+        options: {
+          filter: false,
+          sort: false,
+          empty: true,
+          customBodyRender: (value, tableMeta, updateValue) => {
+            console.log(value);
+            if (tableMeta.rowData[3] === "sim"){
+
+            return (
+              <Chip
+                icon={<FindInPageIcon />}
+                label="Mais Detalhes"
+                clickable
+                color="primary"
+                style={{ backgroundColor: "#04D9C4" }}
+                onClick={() => {
+                  this.detalhepedido(
+                    tableMeta.rowData[1],
+                    tableMeta.rowData[0]
+                  );
+                  this.dialogClose();
+                   this.openDialog();
+                   this.setState({
+                     detalhepedido: []
+                   });
+                   
+
+                   /*
+                  if (
+                    this.state.detalhepedido !== null &&
+                    this.state.detalhepedido.length > 0
+                  ) {
+                    if (this.state.detalhepedido.length === 0) {
+                      swal("Alerta", "Pedido ainda não atendido!", "error");
+                      this.setState({
+                        detalhepedido: null
+                      });
+                    } else {
+                      if (this.state.detalhepedido.length > 0) {
+                        console.log(this.state.detalhepedido.length);
+                        this.openDialog();
+                        this.setState({
+                          detalhepedido: []
+                        });
+                      }
+                    }
+
+                    this.setState({
+                      detalhepedido: null
+                    });
+                  } else {
+                    swal("Alerta", "Pedido ainda não atendido!", "error");
+                    this.setState({
+                      detalhepedido: null
+                    });
+                  }
+
+                  */
+
+                  //data.shift();
+                  //this.setState({ data });
+                }}
+                deleteIcon={<DoneIcon />}
+              />
+              /*<button
+                onClick={() => {
+                  
+                  
+                  console.log(tableMeta.rowData);
+                
+                  //data.shift();
+                  //this.setState({ data });
+                }}
+              >
+                Detalhe
+              </button>*/
+            );
+
+          }else{
+             return (
+               <Chip
+                 label="Não Disponivel"
+                 icon={<NotInterestedIcon/>}
+                 color="primary"
+                 style={{ backgroundColor: "#F29F05" }}
+               />
+             );
+          }
+
+
+          }
+        }
+      }
+    ];
+
+   
+    const columnsdetalhepedido = [
+      {
+        name: "dt_alteracao",
+        label: "Data",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "hr_alteracao",
+        label: "Hora",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "cod_usuario",
+        label: "Usuario",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "prox_pendencia",
+        label: "Próxima Pendencia",
+        options: {
+          filter: false
+        }
       }
     ];
 
@@ -257,7 +536,7 @@ class Dashboard extends Component {
           <Grid container justify="center">
             <Spinner isFetching={this.state.loading} color="#5A6AAA" />
             <Grid
-              spacing={24}
+              spacing={2}
               alignItems="center"
               justify="center"
               container
@@ -275,10 +554,12 @@ class Dashboard extends Component {
                   </div>
                   <div>
                     <Button
+                      to={{ pathname: "/cards", search: `?type=apply` }}
                       variant="outlined"
+                      component={Link}
                       className={classes.outlinedButtom}
                     >
-                      Relatorio de Vendas
+                      Relatorio
                     </Button>
                   </div>
                 </div>
@@ -336,7 +617,7 @@ class Dashboard extends Component {
                         </div>
                       </div>
                       <div>
-                        <SimpleLineChart data={data} />
+                        <SimpleLineChart data={this.state.dadosgraficobarras} />
                       </div>
                     </div>
                   </Paper>
@@ -362,7 +643,7 @@ class Dashboard extends Component {
                           color={"secondary"}
                           gutterBottom
                         >
-                          8 pedidos com pendências
+                          {this.state.listapedidossuspensos.length} Pendências
                         </Typography>
                       </div>
                       <div className={classes.buttonBar}>
@@ -390,23 +671,32 @@ class Dashboard extends Component {
               </Grid>
               <Grid item xs={12}>
                 <Paper
-                  className={classes.paper}
+                  //className={classes.papermuitables}
                   style={{ position: "relative" }}
                 >
                   <Loading loading={loading} />
                   <div className={loading ? classes.loadingState : ""}>
-                    <MUIDataTable
-                      title={"Meus Ultimos Pedidos"}
-                      className={classes.card}
-                      data={this.state.pedidos}
-                      columns={columns}
-                      options={options}
-                    />
+                    <div style={{ boxSizing: "content-box" }}>
+                      <MUIDataTable
+                        title={"Meus Ultimos Pedidos"}
+                        //className={classes.card}
+                        data={this.state.pedidos}
+                        columns={columns}
+                        options={options}
+                      />
+                    </div>
                   </div>
                 </Paper>
               </Grid>
             </Grid>
           </Grid>
+          <SwipeDialog
+            open={this.state.learnMoredialog}
+            onClose={this.dialogClose}
+            dados={this.state.detalhepedido}
+            colunas={columnsdetalhepedido}
+            opcoes={opcoesdetalhe}
+          />
         </div>
       </React.Fragment>
     );

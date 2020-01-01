@@ -1,14 +1,20 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import withStyles from "@material-ui/styles/withStyles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Grid from "@material-ui/core/Grid";
-import CardItem from "./cards/CardItem";
+import MUIDataTable from "mui-datatables";
 import Topbar from "./Topbar";
 import SectionHeader from "./typo/SectionHeader";
 import FaixaDatas from "./faixadata/FaixaDatas";
 import Paper from "@material-ui/core/Paper";
+import Spinner from "../loading";
+import api from "../services/api";
+import { parseISO, format, formatRelative, formatDistance } from "date-fns";
+import { zonedTimeToUtc } from "date-fns-tz";
 
 const backgroundShape = require("../images/shape.svg");
+
+  
 
 const styles = theme => ({
   root: {
@@ -90,10 +96,193 @@ const styles = theme => ({
 });
 
 class Cards extends Component {
+  state = {
+    datainicio: null,
+    datafim: null,
+    dadosusuariologado: null,
+    loading: false,
+    pedidos: []
+  };
+
+  async componentDidMount() {
+    let dadosusuario = await this.lerValores("USUARIO");
+    this.setState({
+      dadosusuariologado: JSON.parse(dadosusuario)
+    });
+  }
+
+  formatadata = data => format(data, "dd'/'MM'/'yy");
+
+  calbackdatainicio = datainicio => {
+    //console.log(datainicio);
+    //const znDate = zonedTimeToUtc(parseISO(datainicio), "America/Sao_Paulo");
+    let resultado = this.formatadata(datainicio);
+    console.log(resultado);
+    this.setState({
+      datainicio: resultado
+    });
+  };
+
+  calbackdatafim = datafim => {
+    let resultado2 = this.formatadata(datafim);
+    this.setState({
+      datafim: resultado2
+    });
+  };
+
+  calbackenviarsolicitacao = evento => {
+    this.controlevendas();
+  };
+
+  lerValores = async valor => await localStorage.getItem(valor);
+
+  controlevendas = async () => {
+    this.setState({
+      loading: true
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/controle-vendas",
+      {
+        codrepres: this.state.dadosusuariologado.codrepresentante,
+        dtinicio: this.state.datainicio,
+        dtfim: this.state.datafim
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    this.setState({
+      loading: false,
+      pedidos: response.data.ttRetorno
+    });
+  };
+
   render() {
     const { classes } = this.props;
     const currentPath = this.props.location.pathname;
-    
+    console.log(this.state.datafim);
+
+    const columns = [
+      {
+        name: "dt_implant",
+        label: "Data",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "cod_cliente",
+        label: "Codigo",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "cliente",
+        label: "Cliente",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "nrpedcli",
+        label: "Pedido",
+        options: {
+          filter: true
+        }
+      },
+
+      {
+        name: "forma_pagamento",
+        label: "Pagamento",
+        options: {
+          filter: true
+        }
+      },
+      {
+        name: "desconto_total",
+        label: "Desc. Total",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "vl_tot_ped",
+        label: "Total",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "valor_liquido",
+        label: "Liquido",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "pesobruto",
+        label: "Peso",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "volumes",
+        label: "Volumes",
+        options: {
+          filter: false
+        }
+      }
+    ];
+
+    const options = {
+      filter: true,
+      print: false,
+      download: true,
+      viewColumns: false,
+      selectableRows: "none",
+      filterType: "dropdown",
+      responsive: "stacked",
+      rowsPerPage: 10,
+      /*onRowClick: (rowData, rowState) => {
+        console.log(rowData, rowState);
+      },*/
+      /*customRowRender: data => {
+          const [nrpedcli, cliente, cod_sit_str] = data;
+           return (
+             <tr key={nrpedcli}>
+               <td colSpan={4} >
+                 {nrpedcli}
+               </td>
+               <td colSpan={4}>
+                 {cliente}
+               </td>
+               <td colSpan={4} >
+                 {cod_sit_str}
+               </td>
+             </tr>
+           );
+
+       },*/
+      textLabels: {
+        pagination: {
+          next: "Próximo",
+          previous: "Anterior",
+          rowsPerPage: "linhas por Pagina:",
+          displayRows: "de"
+        },
+        filter: {
+          all: "Todos",
+          title: "FILTRO",
+          reset: "LIMPAR"
+        }
+      }
+    };
 
     return (
       <React.Fragment>
@@ -101,6 +290,7 @@ class Cards extends Component {
         <Topbar currentPath={currentPath} />
         <div className={classes.root}>
           <Grid container justify="center">
+            <Spinner isFetching={this.state.loading} color="#5A6AAA" />
             <Grid
               spacing={24}
               alignItems="center"
@@ -111,19 +301,37 @@ class Cards extends Component {
               <Grid item xs={12}>
                 <SectionHeader
                   title="Ultimos Pedidos"
-                  subtitle="Ultimos pedidose enviados, para melhor detalhe favor usar o filtro ao abaixo."
+                  subtitle="Ultimos pedidos enviados, para melhor detalhe favor usar o filtro."
                 />
-                
-                  <Grid item xs={12}>
-                    <Paper
-                      className={classes.paper}
-                      style={{ position: "relative" }}
-                    >
-                      <FaixaDatas></FaixaDatas>
-                    </Paper>
-                 
+
+                <Grid item xs={12}>
+                  <Paper
+                    className={classes.paper}
+                    style={{ position: "relative" }}
+                  >
+                    <FaixaDatas
+                      dtinicio={this.calbackdatainicio}
+                      dtfim={this.calbackdatafim}
+                      click={this.calbackenviarsolicitacao}
+                    />
+                  </Paper>
                 </Grid>
-                <CardItem />
+                <Grid item xs={12}>
+                  <Paper
+                    //className={classes.papermuitables}
+                    style={{ position: "relative" }}
+                  >
+                    <div style={{ boxSizing: "content-box" }}>
+                      <MUIDataTable
+                        title={"Pedidos"}
+                        //className={classes.card}
+                        data={this.state.pedidos}
+                        columns={columns}
+                        options={options}
+                      />
+                    </div>
+                  </Paper>
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
