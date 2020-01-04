@@ -15,7 +15,9 @@ class SignIn extends Component {
     loading: false
   };
 
-  async componentDidMount() {}
+  async componentDidMount() {
+    this.apagaTodosValores();
+  }
 
   handleSignIn = async e => {
     e.preventDefault();
@@ -66,6 +68,8 @@ class SignIn extends Component {
       }
     }
   };
+
+  apagaTodosValores = async () => await localStorage.clear();
 
   render() {
     return (

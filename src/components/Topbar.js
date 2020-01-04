@@ -13,7 +13,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
-import { Link as MaterialLink } from '@material-ui/core'
+import { Link as MaterialLink } from '@material-ui/core';
 import Menu from './Menu';
 
 const logo = require('../images/logo.svg');

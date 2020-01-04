@@ -140,7 +140,9 @@ class Dashboard extends Component {
     detalhepedido: [],
     dadosgraficobarras: [],
     listapedidossuspensos: [],
-    dadosusuariologado: null
+    dadosusuariologado: null,
+    aguardando_atendimento: 0,
+    assessoria: 0
   };
 
   lerValores = async valor => await localStorage.getItem(valor);
@@ -187,7 +189,9 @@ class Dashboard extends Component {
       loading: false,
       listapedidossuspensos: pedidossuspensos,
       pedidos: response.data.ttRetorno,
-      dadosgraficobarras: z
+      dadosgraficobarras: z,
+      assessoria: assessoria,
+      aguardando_atendimento: aguardando_atendimento
       //aprovados: response.data.ttRetorno[0].aprovadospie,
       //aguardandoatendimento: response.data.ttRetorno[0].aquardandoatendimentopie
     });
@@ -261,7 +265,10 @@ class Dashboard extends Component {
     });
   }
 
+  apagarValores = async valor => await localStorage.removeItem(valor);
+  
   async componentDidMount() {
+    await this.apagarValores("itenspedido");
     let dadosusuario = await this.lerValores("USUARIO");
     this.setState({
       dadosusuariologado: JSON.parse(dadosusuario)
@@ -586,7 +593,7 @@ class Dashboard extends Component {
                             variant="subtitle2"
                             gutterBottom
                           >
-                            Type
+                            Aguardando Atendimento
                           </Typography>
                           <Typography
                             className={classes.inlining}
@@ -594,7 +601,7 @@ class Dashboard extends Component {
                             variant="h6"
                             gutterBottom
                           >
-                            {numeral(monthlyPayment).format()} units
+                            {this.state.aguardando_atendimento} 
                           </Typography>
                         </div>
                         <div className={classes.inlining}>
@@ -604,7 +611,7 @@ class Dashboard extends Component {
                             variant="subtitle2"
                             gutterBottom
                           >
-                            Othe type
+                            Assessoria
                           </Typography>
                           <Typography
                             className={classes.inlining}
@@ -612,7 +619,43 @@ class Dashboard extends Component {
                             variant="h6"
                             gutterBottom
                           >
-                            {numeral(monthlyInterest).format()} units
+                            {this.state.assessoria} 
+                          </Typography>
+                        </div>
+                        <div className={classes.inlining}>
+                          <Avatar className={classes.interestAvatar}></Avatar>
+                          <Typography
+                            className={classes.inlining}
+                            variant="subtitle2"
+                            gutterBottom
+                          >
+                            Financeiro
+                          </Typography>
+                          <Typography
+                            className={classes.inlining}
+                            color="secondary"
+                            variant="h6"
+                            gutterBottom
+                          >
+                            1
+                          </Typography>
+                        </div>
+                        <div className={classes.inlining}>
+                          <Avatar className={classes.interestAvatar}></Avatar>
+                          <Typography
+                            className={classes.inlining}
+                            variant="subtitle2"
+                            gutterBottom
+                          >
+                            Logistica
+                          </Typography>
+                          <Typography
+                            className={classes.inlining}
+                            color="secondary"
+                            variant="h6"
+                            gutterBottom
+                          >
+                            1
                           </Typography>
                         </div>
                       </div>
