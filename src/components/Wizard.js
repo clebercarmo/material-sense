@@ -80,7 +80,11 @@ const styles = theme => ({
     paddingBottom: 200
   },
   grid: {
-    margin: `0 ${theme.spacing(2)}px`
+    width: 1200,
+    margin: `0 ${theme.spacing(2)}px`,
+    [theme.breakpoints.down("sm")]: {
+      width: "calc(100% - 20px)"
+    }
   },
   smallContainer: {
     width: "60%"
@@ -103,11 +107,21 @@ const styles = theme => ({
     textTransform: "uppercase",
     margin: theme.spacing(1)
   },
+   buttonBar: {
+    display: "flex"
+  },
+  actionButtom: {
+    textTransform: "uppercase",
+    margin: theme.spacing(1),
+    width: 152,
+    height: 36
+  },
   stepper: {
     backgroundColor: "transparent"
   },
   paper: {
     padding: theme.spacing(3),
+    margin: theme.spacing(2),
     textAlign: "left",
     color: theme.palette.text.secondary
   },
@@ -132,6 +146,10 @@ const styles = theme => ({
     marginTop: 32,
     display: "flex",
     justifyContent: "center"
+  },
+  inlining: {
+    display: "inline-block",
+    marginRight: 10
   }
 });
 
@@ -935,9 +953,13 @@ class Wizard extends Component {
       recuperarpedido;
 
     const options = {
-      filter: true,
       filterType: "dropdown",
+      filter: true,
+      print: false,
+      download: false,
+      viewColumns: false,
       responsive: "stacked",
+      rowsPerPage: 10,
       onRowsDelete: rowsDeleted => {
         console.log("item a ser deletado");
         console.log(this.state.produtoscarrinho[rowsDeleted.data[0].dataIndex]);
@@ -971,6 +993,24 @@ class Wizard extends Component {
       },
       onRowClick: (rowData, rowState) => {
         console.log(rowData, rowState);
+      },
+      textLabels: {
+        pagination: {
+          next: "Próximo",
+          previous: "Anterior",
+          rowsPerPage: "linhas por Pagina:",
+          displayRows: "de"
+        },
+        body: {
+          noMatch: "Favor inserir um item ao pedido",
+          toolTip: "Ordenar",
+          columnHeaderTooltip: column => `Ordenado por ${column.label}`
+        },
+        filter: {
+          all: "Todos",
+          title: "FILTRO",
+          reset: "LIMPAR"
+        }
       }
     };
 
@@ -987,7 +1027,7 @@ class Wizard extends Component {
         name: "quantidade",
         label: "Quantidade",
         options: {
-          filter: true,
+          filter: false,
           customBodyRender: (value, tableMeta, updateValue) => (
             <FormControlLabel
               control={<TextField value={value || ""} type="number" />}
@@ -1007,14 +1047,14 @@ class Wizard extends Component {
         name: "campanha",
         Label: "Campanha",
         options: {
-          filter: true
+          filter: false
         }
       },
       {
         name: "descontoitem",
         label: "Desconto Item",
         options: {
-          filter: true,
+          filter: false,
           sort: false
         }
       },
@@ -1022,7 +1062,7 @@ class Wizard extends Component {
         name: "total",
         label: "Valor Total",
         options: {
-          filter: true,
+          filter: false,
           sort: false
         }
       }
@@ -1113,29 +1153,35 @@ class Wizard extends Component {
       recuperarpedido = (
         <React.Fragment>
           <Paper className={classes.paper}>
-            <Typography variant="h6" gutterBottom>
+            <Typography
+              className={classes.inlining}
+              color="secondary"
+              variant="h6"
+              gutterBottom
+            >
               Existe um pedido em Andamento o que você deseja fazer ?
-            </Typography>{" "}
+            </Typography>
             <Divider />
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              onClick={this.handleRecuperarPedido}
-              startIcon={<HowToVoteIcon />}
-            >
-              Recuperar Pedido{" "}
-            </Button>
-            <Button
-              variant="contained"
-              color="danger"
-              className={classes.button}
-              onClick={this.handleClickExcluirPedido}
-              startIcon={<DeleteIcon />}
-            >
-              Excluir Pedido{" "}
-            </Button>{" "}
-          </Paper>{" "}
+            <div className={classes.buttonBar}>
+              <Button
+                color="primary"
+                variant="contained"
+                className={classes.actionButtom}
+                onClick={this.handleRecuperarPedido}
+                startIcon={<HowToVoteIcon />}
+              >
+                Recuperar
+              </Button>
+              <Button
+                variant="outlined"
+                className={classes.actionButtom}
+                onClick={this.handleClickExcluirPedido}
+                startIcon={<DeleteIcon />}
+              >
+                Excluir
+              </Button>
+            </div>
+          </Paper>
         </React.Fragment>
       );
     }
@@ -1156,7 +1202,20 @@ class Wizard extends Component {
               <Grid item xs={12}>
                 <Back />
                 <Container>
-                  {recuperarpedido}
+                  
+                  <div className={classes.topBar}>
+                  <div className={classes.block}>
+                    <Typography variant="h6" gutterBottom>
+                       Pedido
+                    </Typography>
+                    <Typography variant="body1">
+                      Envie um novo pedido de Venda, Bonificação ou Consumo.
+                    </Typography>
+                  </div>
+                  <div>
+                    {recuperarpedido}
+                  </div>
+                  </div>
 
                   <Paper className={classes.paper}>
                     <Mensagem
@@ -1164,14 +1223,7 @@ class Wizard extends Component {
                       mensagem={this.state.mensagemloader}
                       variant={"info"}
                     />
-                    <Typography
-                      className={classes.inlining}
-                      color="secondary"
-                      variant="h6"
-                      gutterBottom
-                    >
-                      Novo Pedido
-                    </Typography>
+                   
                     <Card className={classes.card} display="flex">
                       {this.state.isescolheucliente && (
                         <CardContent>
@@ -1254,89 +1306,89 @@ class Wizard extends Component {
                     )}
                   </Paper>
                   {this.state.isescolheucliente && (
-                    <Paper className={classes.paper}>
+                    <Paper
+                      className={classes.paper}
+                      style={{ position: "relative" }}
+                    >
                       <Typography variant="h6" gutterBottom>
                         Escolha os Produtos
                       </Typography>
-                      <Box display="flex">
-                        <Box m={1}>
-                          <IconButton aria-label="cart">
-                            <Badge
-                              className={classes.badge}
-                              badgeContent={this.state.produtoscarrinho.length}
-                              color="primary"
-                            >
-                              <ShoppingCartIcon />
-                            </Badge>
-                            Produtos no Carrinho
-                          </IconButton>
-                        </Box>
-                      </Box>
+                      <div className={classes.inlining}>
+                        <IconButton aria-label="cart">
+                          <Badge
+                            className={classes.badge}
+                            badgeContent={this.state.produtoscarrinho.length}
+                            color="primary"
+                          >
+                            <ShoppingCartIcon />
+                          </Badge>
+                        </IconButton>
+                        <Typography
+                          className={classes.inlining}
+                          variant="subtitle2"
+                          gutterBottom
+                        >
+                          Produtos no Carrinho
+                        </Typography>
+                      </div>
                       <Select
                         options={this.state.produtos}
                         onChange={this.handleProduto}
                         className={classes.selectproduto}
                       ></Select>
-                      <Card className={classes.card} display="flex">
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Tabela: R$: {this.state.precotabela}
-                            </Box>
-                          </Typography>
-                          {quantidadecomponent}
-                          {descontoitemcomponent}
-                          {descontocampanhacomponent}
-                          <Divider />
-                          <Box>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={this.handleClickAdicionarItemPedido}
-                              startIcon={<CloudUploadIcon />}
-                            >
-                              Adicionar
-                            </Button>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                      <MUIDataTable
-                        title={"Produtos"}
-                        className={classes.card}
-                        //key={this.state.produtoscarrinho}
-                        data={this.state.produtoscarrinho}
-                        columns={columns}
-                        options={options}
-                      />
+
+                      <Typography variant="h6" gutterBottom>
+                        <Box color="primary.main">
+                          Tabela: R$: {this.state.precotabela}
+                        </Box>
+                      </Typography>
+                      {quantidadecomponent}
+                      {descontoitemcomponent}
+                      {descontocampanhacomponent}
+                      <Divider />
+
+                      <Button
+                        variant="outlined"
+                        className={classes.outlinedButtom}
+                        onClick={this.handleClickAdicionarItemPedido}
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Adicionar
+                      </Button>
+
+                      <div style={{ boxSizing: "content-box" }}>
+                        <MUIDataTable
+                          title={"Produtos"}
+                          className={classes.card}
+                          //key={this.state.produtoscarrinho}
+                          data={this.state.produtoscarrinho}
+                          columns={columns}
+                          options={options}
+                        />
+                      </div>
                     </Paper>
                   )}
                   {this.state.produtoscarrinho.length > 0 && (
                     <Paper className={classes.paper}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.button}
-                        onClick={this.handleEnviarPedido}
-                        startIcon={<CloudUploadIcon />}
-                      >
-                        Enviar Pedido
-                      </Button>
-                      <Button
-                        variant="contained"
-                        className={classes.button}
-                        startIcon={<SaveIcon />}
-                      >
-                        Salvar Pedido
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="erro"
-                        onClick={this.handleClickExcluirPedido}
-                        className={classes.button}
-                        startIcon={<DeleteIcon />}
-                      >
-                        Excluir Pedido
-                      </Button>
+                      <div className={classes.buttonBar}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.actionButtom}
+                          onClick={this.handleEnviarPedido}
+                          startIcon={<CloudUploadIcon />}
+                        >
+                          Enviar
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={this.handleClickExcluirPedido}
+                          className={classes.actionButtom}
+                          startIcon={<DeleteIcon />}
+                        >
+                          Excluir
+                        </Button>
+                      </div>
                     </Paper>
                   )}
                   <Modal

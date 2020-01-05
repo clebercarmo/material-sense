@@ -352,6 +352,11 @@ class Dashboard extends Component {
           rowsPerPage: "linhas por Pagina:",
           displayRows: "de"
         },
+        body: {
+          noMatch: "Você não possui pedidos enviados",
+          toolTip: "Ordenar",
+          columnHeaderTooltip: column => `Ordenado por ${column.label}`
+        },
         filter: {
           all: "Todos",
           title: "FILTRO",
