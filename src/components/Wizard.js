@@ -1202,50 +1202,50 @@ class Wizard extends Component {
               <Grid item xs={12}>
                 <Back />
                 <Container>
-                  
                   <div className={classes.topBar}>
-                  <div className={classes.block}>
-                    <Typography variant="h6" gutterBottom>
-                       Pedido
-                    </Typography>
-                    <Typography variant="body1">
-                      Envie um novo pedido de Venda, Bonificação ou Consumo.
-                    </Typography>
-                  </div>
-                  <div>
-                    {recuperarpedido}
-                  </div>
+                    <div className={classes.block}>
+                      <Typography variant="h6" gutterBottom>
+                        Pedido
+                      </Typography>
+                      <Typography variant="body1">
+                        Envie um novo pedido de Venda, Bonificação ou Consumo.
+                      </Typography>
+                    </div>
+                    <div>{recuperarpedido}</div>
                   </div>
 
-                  <Paper className={classes.paper}>
+                  <Paper
+                    className={classes.paper}
+                    style={{
+                      position: "relative"
+                    }}
+                  >
                     <Mensagem
                       open={this.state.loading}
                       mensagem={this.state.mensagemloader}
                       variant={"info"}
                     />
-                   
-                    <Card className={classes.card} display="flex">
-                      {this.state.isescolheucliente && (
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Tabela de preço do cliente:{" "}
-                              {this.state.tabelaprecocliente}
-                            </Box>
-                          </Typography>
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Desconto Canal: {this.state.descontocanal}
-                            </Box>
-                          </Typography>
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              {this.state.tipopedidodescricao}
-                            </Box>
-                          </Typography>
-                        </CardContent>
-                      )}
-                    </Card>
+
+                    {this.state.isescolheucliente && (
+                      <React.Fragment>
+                        <Typography variant="h6" gutterBottom>
+                          <Box color="primary.main">
+                            Tabela de preço do cliente:{" "}
+                            {this.state.tabelaprecocliente}
+                          </Box>
+                        </Typography>
+                        <Typography variant="h6" gutterBottom>
+                          <Box color="primary.main">
+                            Desconto Canal: {this.state.descontocanal}
+                          </Box>
+                        </Typography>
+                        <Typography variant="h6" gutterBottom>
+                          <Box color="primary.main">
+                            {this.state.tipopedidodescricao}
+                          </Box>
+                        </Typography>
+                      </React.Fragment>
+                    )}
 
                     <TextField
                       id="outlined-name"
@@ -1306,67 +1306,73 @@ class Wizard extends Component {
                     )}
                   </Paper>
                   {this.state.isescolheucliente && (
-                    <Paper
-                      className={classes.paper}
-                      style={{ position: "relative" }}
-                    >
-                      <Typography variant="h6" gutterBottom>
-                        Escolha os Produtos
-                      </Typography>
-                      <div className={classes.inlining}>
-                        <IconButton aria-label="cart">
-                          <Badge
-                            className={classes.badge}
-                            badgeContent={this.state.produtoscarrinho.length}
-                            color="primary"
-                          >
-                            <ShoppingCartIcon />
-                          </Badge>
-                        </IconButton>
-                        <Typography
-                          className={classes.inlining}
-                          variant="subtitle2"
-                          gutterBottom
-                        >
-                          Produtos no Carrinho
-                        </Typography>
-                      </div>
-                      <Select
-                        options={this.state.produtos}
-                        onChange={this.handleProduto}
-                        className={classes.selectproduto}
-                      ></Select>
-
-                      <Typography variant="h6" gutterBottom>
-                        <Box color="primary.main">
-                          Tabela: R$: {this.state.precotabela}
-                        </Box>
-                      </Typography>
-                      {quantidadecomponent}
-                      {descontoitemcomponent}
-                      {descontocampanhacomponent}
-                      <Divider />
-
-                      <Button
-                        variant="outlined"
-                        className={classes.outlinedButtom}
-                        onClick={this.handleClickAdicionarItemPedido}
-                        startIcon={<CloudUploadIcon />}
+                    <Grid item xs={12}>
+                      <Paper
+                        className={classes.paper}
+                        style={{ position: "relative" }}
                       >
-                        Adicionar
-                      </Button>
+                        <Typography variant="h6" gutterBottom>
+                          Escolha os Produtos
+                        </Typography>
+                        <div className={classes.inlining}>
+                          <IconButton aria-label="cart">
+                            <Badge
+                              className={classes.badge}
+                              badgeContent={this.state.produtoscarrinho.length}
+                              color="primary"
+                            >
+                              <ShoppingCartIcon />
+                            </Badge>
+                          </IconButton>
+                          <Typography
+                            className={classes.inlining}
+                            variant="subtitle2"
+                            gutterBottom
+                          >
+                            Produtos no Carrinho
+                          </Typography>
+                        </div>
+                        <Select
+                          options={this.state.produtos}
+                          onChange={this.handleProduto}
+                          className={classes.selectproduto}
+                        ></Select>
 
-                      <div style={{ boxSizing: "content-box" }}>
-                        <MUIDataTable
-                          title={"Produtos"}
-                          className={classes.card}
-                          //key={this.state.produtoscarrinho}
-                          data={this.state.produtoscarrinho}
-                          columns={columns}
-                          options={options}
-                        />
-                      </div>
-                    </Paper>
+                        <Typography variant="h6" gutterBottom>
+                          <Box color="primary.main">
+                            Tabela: R$: {this.state.precotabela}
+                          </Box>
+                        </Typography>
+                        {quantidadecomponent}
+                        {descontoitemcomponent}
+                        {descontocampanhacomponent}
+                        <Divider />
+
+                        <Button
+                          variant="outlined"
+                          className={classes.outlinedButtom}
+                          onClick={this.handleClickAdicionarItemPedido}
+                          startIcon={<CloudUploadIcon />}
+                        >
+                          Adicionar
+                        </Button>
+                      </Paper>
+
+                      <Paper
+                        //className={classes.papermuitables}
+                        style={{ position: "relative" }}
+                      >
+                        <div style={{ boxSizing: "content-box" }}>
+                          <MUIDataTable
+                            title={"Produtos"}
+                            //key={this.state.produtoscarrinho}
+                            data={this.state.produtoscarrinho}
+                            columns={columns}
+                            options={options}
+                          />
+                        </div>
+                      </Paper>
+                    </Grid>
                   )}
                   {this.state.produtoscarrinho.length > 0 && (
                     <Paper className={classes.paper}>
