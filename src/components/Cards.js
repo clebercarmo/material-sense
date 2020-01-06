@@ -142,7 +142,7 @@ class Cards extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/controle-vendas",
+      "https://inglezaonline.com.br/microservices/controle-vendas",
       {
         codrepres: this.state.dadosusuariologado.codrepresentante,
         dtinicio: this.state.datainicio,

@@ -268,7 +268,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/itemvenda",
+      "https://inglezaonline.com.br/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -289,7 +289,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/formapagamento",
+      "https://inglezaonline.com.br/microservices/formapagamento",
       {
         cod_representante: cliente
       },
@@ -320,7 +320,7 @@ class Wizard extends Component {
 
     try {
       const response = await api.post(
-        "http://localhost:4000/detalheitem",
+        "https://inglezaonline.com.br/microservices/detalheitem",
         {
           codcliente: codcliente,
           tabpreco: tabpreco,
@@ -365,7 +365,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/meusclientes",
+      "https://inglezaonline.com.br/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -581,7 +581,7 @@ class Wizard extends Component {
     });
 
     await axios({
-      url: "http://localhost:4000/incluirpedido",
+      url: "https://inglezaonline.com.br/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -675,7 +675,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/pedido",
+      "https://inglezaonline.com.br/microservices/pedido",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -711,7 +711,7 @@ class Wizard extends Component {
 
     /*
     axios({
-      url: "http://localhost:4000/incluirpedido",
+      url: "https://inglezaonline.com.br/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -730,7 +730,7 @@ class Wizard extends Component {
 
     /* 
     const response = await api.post(
-      "http://localhost:4000/incluirpedido",
+      "https://inglezaonline.com.br/microservices/incluirpedido",
       {
         pedidocompleto
       },
@@ -937,7 +937,7 @@ class Wizard extends Component {
     const queryString = this.props.location.search;
 
     this.props.history.push({
-      pathname: "/dashboard",
+      pathname: "/vendadireta/dashboard",
       search: queryString
     });
   };

@@ -33,7 +33,7 @@ class SignIn extends Component {
         });
 
         const response = await api.post(
-          "http://localhost:4000/api-login",
+          "https://inglezaonline.com.br/microservices/api-login",
           {
             usuario,
             senha
@@ -59,7 +59,7 @@ class SignIn extends Component {
             "USUARIO",
             JSON.stringify(response.data.ttRetorno[0])
           );
-          this.props.history.push("/dashboard");
+          this.props.history.push("/vendadireta/dashboard");
         }
       } catch (err) {
         this.setState({

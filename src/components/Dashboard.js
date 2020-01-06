@@ -153,7 +153,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/pedido",
+      "https://inglezaonline.com.br/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -203,7 +203,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/detalhe-pedido",
+      "https://inglezaonline.com.br/microservices/detalhe-pedido",
       { pedido: pedido, nomeabrev: cliente },
       {
         headers: {
@@ -566,7 +566,7 @@ class Dashboard extends Component {
                   </div>
                   <div>
                     <Button
-                      to={{ pathname: "/cards", search: `?type=apply` }}
+                      to={{ pathname: "/vendadireta/cards", search: `?type=apply` }}
                       variant="outlined"
                       component={Link}
                       className={classes.outlinedButtom}
@@ -696,7 +696,7 @@ class Dashboard extends Component {
                       </div>
                       <div className={classes.buttonBar}>
                         <Button
-                          to={{ pathname: "/dashboard", search: `?type=save` }}
+                          to={{ pathname: "/vendadireta/dashboard", search: `?type=save` }}
                           component={Link}
                           variant="outlined"
                           className={classes.actionButtom}
@@ -704,7 +704,7 @@ class Dashboard extends Component {
                           Cancelar
                         </Button>
                         <Button
-                          to={{ pathname: "/cards", search: `?type=apply` }}
+                          to={{ pathname: "/vendadireta/cards", search: `?type=apply` }}
                           component={Link}
                           color="primary"
                           variant="contained"

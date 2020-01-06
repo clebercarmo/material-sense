@@ -1,27 +1,23 @@
 const Menu = [
   {
     label: "Perfil",
-    pathname: "/signup"
+    pathname: "/vendadireta/signup"
   },
   {
     label: "Dashboard",
-    pathname: "/dashboard"
+    pathname: "/vendadireta/dashboard"
   },
-  /*{
-    label: "Signup",
-    pathname: "/signup"
-  }, */
   {
     label: "Novo Pedido",
-    pathname: "/wizard"
+    pathname: "/vendadireta/wizard"
   },
   {
     label: "Relatório de Vendas",
-    pathname: "/cards"
+    pathname: "/vendadireta/cards"
   },
   {
     label: "Sair",
-    pathname: "/",
+    pathname: "/vendadireta",
     external: true
   }
 

@@ -1,24 +1,43 @@
-import React from 'react';
-import { Route, HashRouter, Switch } from 'react-router-dom';
-import Dashboard from './components/Dashboard';
-import Wizard from './components/Wizard';
-import Cards from './components/Cards';
-import Main from './components/Main';
-import Signup from './components/Signup';
-import ScrollToTop from './components/ScrollTop';
-import SignIn from './components/SignIn/SignIn';
+import React from "react";
+import { Route, BrowserRouter, Switch, Redirect } from "react-router-dom";
+import { isAuthenticated } from "./services/auth";
+import Dashboard from "./components/Dashboard";
+import Wizard from "./components/Wizard";
+import Cards from "./components/Cards";
+import Main from "./components/Main";
+import Signup from "./components/Signup";
+import SignIn from "./components/SignIn/SignIn";
+
+
+const PrivateRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      isAuthenticated() ? (
+        <Component {...props} />
+      ) : (
+        <Redirect
+          to={{
+            pathname: "/vendadireta",
+            state: {
+              from: props.location
+            }
+          }}
+        />
+      )
+    }
+  />
+);
 
 export default props => (
-  <HashRouter>
-    <ScrollToTop>
-      <Switch>
-        <Route exact path="/main" component={Main} />
-        <Route exact path="/" component={SignIn} />
-        <Route exact path="/dashboard" component={Dashboard} />
-        <Route exact path="/signup" component={Signup} />
-        <Route exact path="/wizard" component={Wizard} />
-        <Route exact path="/cards" component={Cards} />
-      </Switch>
-    </ScrollToTop>
-  </HashRouter>
+  <BrowserRouter>
+    <Switch>
+      <PrivateRoute exact path="/vendadireta/main" component={Main} />
+      <Route exact path="/vendadireta" component={SignIn} />
+      <PrivateRoute exact path="/vendadireta/dashboard" component={Dashboard} />
+      <PrivateRoute exact path="/vendadireta/signup" component={Signup} />
+      <PrivateRoute exact path="/vendadireta/wizard" component={Wizard} />
+      <PrivateRoute exact path="/vendadireta/cards" component={Cards} />
+    </Switch>
+  </BrowserRouter>
 );
