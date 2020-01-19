@@ -194,7 +194,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/meusclientes",
+      "http://localhost:4000/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -397,7 +397,7 @@ class Wizard extends Component {
     });
 
     await axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -504,7 +504,7 @@ class Wizard extends Component {
 
     /*
     axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -523,7 +523,7 @@ class Wizard extends Component {
 
     /* 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/incluirpedido",
+      "http://localhost:4000/microservices/incluirpedido",
       {
         pedidocompleto
       },
@@ -575,7 +575,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/itemvenda",
+      "http://localhost:4000/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -596,7 +596,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/formapagamento",
+      "http://localhost:4000/microservices/formapagamento",
       {
         cod_representante: cliente
       },

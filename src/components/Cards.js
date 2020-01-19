@@ -11,6 +11,9 @@ import Spinner from "../loading";
 import api from "../services/api";
 import { parseISO, format, formatRelative, formatDistance } from "date-fns";
 import { zonedTimeToUtc } from "date-fns-tz";
+import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
+import DoneIcon from "@material-ui/icons/Done";
+import Chip from "@material-ui/core/Chip";
 
 const backgroundShape = require("../images/shape.svg");
 
@@ -28,9 +31,13 @@ const styles = theme => ({
     padding: 20,
     paddingBottom: 200
   },
-  grid: {
-    width: 1000
-  },
+   grid: {
+     width: 1400,
+     margin: `0 ${theme.spacing(2)}px`,
+     [theme.breakpoints.down("sm")]: {
+       width: "calc(100% - 20px)"
+     }
+   },
   paper: {
     padding: theme.spacing(3),
     margin: theme.spacing(2),
@@ -142,7 +149,7 @@ class Cards extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/controle-vendas",
+      "http://localhost:4000/microservices/controle-vendas",
       {
         codrepres: this.state.dadosusuariologado.codrepresentante,
         dtinicio: this.state.datainicio,
@@ -154,6 +161,8 @@ class Cards extends Component {
         }
       }
     );
+
+    console.log(response.data.ttRetorno);
 
     this.setState({
       loading: false,
@@ -168,17 +177,82 @@ class Cards extends Component {
 
     const columns = [
       {
-        name: "dt_implant",
-        label: "Data",
+        name: "nrpedcli",
+        label: "Pedido",
         options: {
           filter: true
+        }
+      },
+      {
+        name: "tipo",
+        label: "Tipo",
+        options: {
+          filter: true,
+          sort: false,
+          empty: true,
+          customBodyRender: (value, tableMeta, updateValue) => {
+            console.log(tableMeta);
+            if (tableMeta.rowData[1] === "V") {
+              return (
+                <Chip
+                  label="Venda"
+                  color="primary"
+                  style={{ backgroundColor: "#04D9C4" }}
+                />
+              );
+            }
+
+            if (tableMeta.rowData[1] === "B") {
+              return (
+                <Chip
+                  label="Bonificação"
+                  color="primary"
+                  style={{ backgroundColor: "#04D9C4" }}
+                />
+              );
+            }
+
+            if (tableMeta.rowData[1] === "C") {
+              return (
+                <Chip
+                  label="Consumo"
+                  color="primary"
+                  style={{ backgroundColor: "#04D9C4" }}
+                />
+              );
+            }
+
+            if (tableMeta.rowData[1] === "I") {
+              return (
+                <Chip
+                  label="Industria"
+                  color="primary"
+                  style={{ backgroundColor: "#04D9C4" }}
+                />
+              );
+            }
+          }
+        }
+      },
+      {
+        name: "dt_implant",
+        label: "Implantação",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "dt_entrega",
+        label: "Entrega",
+        options: {
+          filter: false
         }
       },
       {
         name: "cod_cliente",
         label: "Codigo",
         options: {
-          filter: true
+          filter: false
         }
       },
       {
@@ -188,19 +262,12 @@ class Cards extends Component {
           filter: true
         }
       },
-      {
-        name: "nrpedcli",
-        label: "Pedido",
-        options: {
-          filter: true
-        }
-      },
 
       {
         name: "forma_pagamento",
         label: "Pagamento",
         options: {
-          filter: true
+          filter: false
         }
       },
       {
@@ -237,6 +304,50 @@ class Cards extends Component {
         options: {
           filter: false
         }
+      },
+      {
+        name: "cod_sit_str",
+        label: " ",
+        options: {
+          filter: true,
+          sort: false,
+          empty: true,
+          customBodyRender: (value, tableMeta, updateValue) => {
+
+            
+               return (
+                 <Chip
+                   label={tableMeta.rowData[12]}
+                   color="primary"
+                   style={{ backgroundColor: "#04D9C4" }}
+                 />
+               );
+           
+          }
+        }
+      },
+      {
+        name: " ",
+        options: {
+          filter: false,
+          sort: false,
+          empty: true,
+          customBodyRender: (value, tableMeta, updateValue) => {
+            return (
+              <Chip
+                icon={<ShoppingCartIcon />}
+                //label="Itens"
+                clickable
+                color="primary"
+                style={{ backgroundColor: "#04D9C4" }}
+                onClick={() => {
+                  alert("Clicado");
+                }}
+                deleteIcon={<DoneIcon />}
+              />
+            );
+          }
+        }
       }
     ];
 
@@ -269,12 +380,18 @@ class Cards extends Component {
            );
 
        },*/
+       
       textLabels: {
         pagination: {
           next: "Próximo",
           previous: "Anterior",
           rowsPerPage: "linhas por Pagina:",
           displayRows: "de"
+        },
+        body: {
+          noMatch: "Favor selecionar o periodo desejado",
+          toolTip: "Ordenar",
+          columnHeaderTooltip: column => `Ordenado por ${column.label}`
         },
         filter: {
           all: "Todos",
@@ -292,7 +409,7 @@ class Cards extends Component {
           <Grid container justify="center">
             <Spinner isFetching={this.state.loading} color="#5A6AAA" />
             <Grid
-              spacing={24}
+              spacing={2}
               alignItems="center"
               justify="center"
               container
@@ -304,7 +421,7 @@ class Cards extends Component {
                   subtitle="Ultimos pedidos enviados, para melhor detalhe favor usar o filtro."
                 />
 
-                <Grid item xs={12}>
+                
                   <Paper
                     className={classes.paper}
                     style={{ position: "relative" }}
@@ -315,7 +432,7 @@ class Cards extends Component {
                       click={this.calbackenviarsolicitacao}
                     />
                   </Paper>
-                </Grid>
+                
                 <Grid item xs={12}>
                   <Paper
                     //className={classes.papermuitables}

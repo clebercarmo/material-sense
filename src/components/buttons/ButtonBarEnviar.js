@@ -22,7 +22,7 @@ class ButtonBarEnviar extends Component {
 
     return (
       <div className={classes.spaceTop}>
-        <Button className={classes.primary}>Cancelar</Button>
+        
         <Button
           variant="contained"
           color="primary"

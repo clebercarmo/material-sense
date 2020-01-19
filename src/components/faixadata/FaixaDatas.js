@@ -32,14 +32,9 @@ export default function FaixaDatas(props) {
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptLocale}>
-      <Typography
-        style={{ textTransform: "uppercase" }}
-        color="secondary"
-        gutterBottom
-      >
-        DATA
-      </Typography>
-      <Grid container justify="space-around">
+      < Grid container justify = "space-around" spacing={2}>
+     
+      
         <KeyboardDatePicker
           margin="normal"
           id="date-picker-dialog"

@@ -1,6 +1,11 @@
-import React,  { Component } from 'react';
+import React, {
+  Component
+} from 'react';
 import withStyles from '@material-ui/styles/withStyles';
-import { withRouter, Link } from 'react-router-dom';
+import {
+  withRouter,
+  Link
+} from 'react-router-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -142,7 +147,9 @@ class Dashboard extends Component {
     listapedidossuspensos: [],
     dadosusuariologado: null,
     aguardando_atendimento: 0,
-    assessoria: 0
+    assessoria: 0,
+    financeiro: 0,
+    logistica: 0
   };
 
   lerValores = async valor => await localStorage.getItem(valor);
@@ -153,7 +160,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -176,11 +183,25 @@ class Dashboard extends Component {
       return x.proxi_pendencia === "ASSESSORIA";
     }).length;
 
+     let financeiro = response.data.ttRetorno.filter(x => {
+       return x.proxi_pendencia === "FINANCEIRO";
+     }).length;
+
+      let logistica = response.data.ttRetorno.filter(x => {
+        return x.proxi_pendencia === "LOGISTICA";
+      }).length;
+
     let z = [
       { Name: "Aguadando Atendimento", count: aguardando_atendimento },
       { Name: "Assessoria", count: assessoria },
-      { Name: "Logistica", count: assessoria },
-      { Name: "Financeiro", count: assessoria }
+      {
+        Name: "Logistica",
+        count: logistica
+      },
+      {
+        Name: "Financeiro",
+        count: financeiro
+      }
     ];
    
 
@@ -191,6 +212,8 @@ class Dashboard extends Component {
       pedidos: response.data.ttRetorno,
       dadosgraficobarras: z,
       assessoria: assessoria,
+      logistica: logistica,
+      financeiro: financeiro,
       aguardando_atendimento: aguardando_atendimento
       //aprovados: response.data.ttRetorno[0].aprovadospie,
       //aguardandoatendimento: response.data.ttRetorno[0].aquardandoatendimentopie
@@ -203,7 +226,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/detalhe-pedido",
+      "http://localhost:4000/microservices/detalhe-pedido",
       { pedido: pedido, nomeabrev: cliente },
       {
         headers: {
@@ -642,7 +665,9 @@ class Dashboard extends Component {
                             variant="h6"
                             gutterBottom
                           >
-                            1
+                            {
+                              this.state.financeiro
+                            }
                           </Typography>
                         </div>
                         <div className={classes.inlining}>
@@ -660,7 +685,9 @@ class Dashboard extends Component {
                             variant="h6"
                             gutterBottom
                           >
-                            1
+                             {
+                              this.state.logistica
+                            }
                           </Typography>
                         </div>
                       </div>

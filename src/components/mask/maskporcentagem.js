@@ -14,9 +14,17 @@ const TextMaskPercent = (props) => {
   } = props;
   
   const numberMask = createNumberMask({
-    prefix: "",
-    guide: false,
-    suffix: " %" // This will put the dollar sign at the end, with a space.
+     prefix: "",
+     suffix: "",
+     includeThousandsSeparator: false,
+     thousandsSeparatorSymbol: ",",
+     allowDecimal: true,
+     decimalSymbol: ".",
+     decimalLimit: 2, // how many digits allowed after the decimal
+     integerLimit: 5, // limit length of integer numbers
+     allowNegative: false,
+     allowLeadingZeroes: false
+    //suffix: " %" // This will put the dollar sign at the end, with a space.
   });
 
   return (

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Form, Container } from "./styles";
-import Logo from "../../images/fundo.png";
+import Logo from "../../images/loingleza.svg";
 import api from "../../services/api";
 import { login } from "../../services/auth";
 import Spinner from "../../loading";
@@ -33,7 +33,7 @@ class SignIn extends Component {
         });
 
         const response = await api.post(
-          "https://inglezaonline.com.br/microservices/api-login",
+          "http://localhost:4000/microservices/api-login",
           {
             usuario,
             senha

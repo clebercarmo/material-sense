@@ -24,9 +24,7 @@ import swal from "sweetalert";
 import axios from "axios";
 import MUIDataTable from "mui-datatables";
 import TextField from "@material-ui/core/TextField";
-
-import Container from "@material-ui/core/Container";
-
+import TextareaAutosize from "@material-ui/core/TextareaAutosize";
 import PropTypes from "prop-types";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import SaveIcon from "@material-ui/icons/Save";
@@ -42,6 +40,7 @@ import { css } from "@emotion/core";
 import clsx from "clsx";
 import TextMaskPercent from "./mask/maskporcentagem";
 import TextMaskQuantidade from "./mask/maskquantidade";
+import CurrencyInput from "./mask/maskporcentagemnew";
 import Divider from "@material-ui/core/Divider";
 import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
 import Badge from "@material-ui/core/Badge";
@@ -60,7 +59,14 @@ import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
 import HowToVoteIcon from "@material-ui/icons/HowToVote";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
-
+import DateFnsUtils from "@date-io/date-fns";
+import ptLocale from "date-fns/locale/pt-BR";
+import "date-fns";
+import { parseISO, format, formatRelative, formatDistance } from "date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker
+} from "@material-ui/pickers";
 const qs = require("query-string");
 const backgroundShape = require("../images/shape.svg");
 
@@ -70,16 +76,21 @@ numeral.defaultFormat("0,000");
 const styles = theme => ({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.primary["A100"],
+    backgroundColor: theme.palette.grey["100"],
     overflow: "hidden",
     background: `url(${backgroundShape}) no-repeat`,
     backgroundSize: "cover",
     backgroundPosition: "0 400px",
-    marginTop: 10,
-    padding: 20,
     paddingBottom: 200
   },
   grid: {
+    width: 1200,
+    margin: `0 ${theme.spacing(2)}px`,
+    [theme.breakpoints.down("sm")]: {
+      width: "calc(100% - 20px)"
+    }
+  },
+  gridtotais: {
     width: 1200,
     margin: `0 ${theme.spacing(2)}px`,
     [theme.breakpoints.down("sm")]: {
@@ -107,7 +118,7 @@ const styles = theme => ({
     textTransform: "uppercase",
     margin: theme.spacing(1)
   },
-   buttonBar: {
+  buttonBar: {
     display: "flex"
   },
   actionButtom: {
@@ -120,8 +131,8 @@ const styles = theme => ({
     backgroundColor: "transparent"
   },
   paper: {
-    padding: theme.spacing(3),
-    margin: theme.spacing(2),
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
     textAlign: "left",
     color: theme.palette.text.secondary
   },
@@ -150,6 +161,10 @@ const styles = theme => ({
   inlining: {
     display: "inline-block",
     marginRight: 10
+  },
+  totais: {
+    display: "inline-block",
+    marginRight: 10
   }
 });
 
@@ -169,14 +184,32 @@ const drawerWidth = 240;
 let excluido = false;
 
 class Wizard extends Component {
+  focusQuantidadeInput() {
+    // Explicitly focus the text input using the raw DOM API
+    // Note: we're accessing "current" to get the DOM node
+    this.textQuantidadeInput.current.focus();
+  }
+
   constructor(props) {
     super(props);
+
+    this.textQuantidadeInput = React.createRef();
+    this.focusQuantidadeInput = this.focusQuantidadeInput.bind(this);
+
     this.state = {
+      data_entrega_formatado: "",
+      data_entrega: null,
       cod_cliente: "",
+      peso_total: 0,
+      valor_bruto_total: null,
+      total_volumes: 0,
+      peso_produto: 0,
+      forma_pagamento_default: null,
       tab_preco: "",
       cod_tp_pedido: "",
       cod_pagamento: "",
       cod_frete: "",
+      pedidosvenda: null,
       produtos: [],
       clientes: [],
       tipo_pedido: [
@@ -210,6 +243,8 @@ class Wizard extends Component {
         }
       ],
       tabelaprecocliente: "",
+      observacaopedido: "",
+      ordemcompra: "",
       descontocanal: null,
       loading: false,
       isBonificacao: false,
@@ -260,7 +295,38 @@ class Wizard extends Component {
         pedidoemandamento: false
       });
     }
+
+    this.state.data_entrega = new Date();
+    this.ultimospedidos();
   }
+
+  ultimospedidos = async () => {
+    this.setState({
+      loading: true
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/microservices/pedido",
+      { cod_representante: this.state.dadosusuariologado.codrepresentante },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    //console.log(response.data.ttRetorno);
+
+    let pedidosvenda = response.data.ttRetorno.filter(pedido => {
+      return pedido.tp_pedido === "V";
+    });
+
+    console.log(pedidosvenda);
+
+    this.setState({
+      loading: false,
+      pedidosvenda: pedidosvenda
+    });
+  };
 
   cargaitens = async cliente => {
     this.setState({
@@ -268,7 +334,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/itemvenda",
+      "http://localhost:4000/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -289,7 +355,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/formapagamento",
+      "http://localhost:4000/microservices/formapagamento",
       {
         cod_representante: cliente
       },
@@ -302,6 +368,8 @@ class Wizard extends Component {
     this.setState({
       pagamento: response.data.ttRetorno
     });
+
+    console.log(response.data.ttRetorno);
   };
 
   valorvendaitem = async (
@@ -320,7 +388,7 @@ class Wizard extends Component {
 
     try {
       const response = await api.post(
-        "https://inglezaonline.com.br/microservices/detalheitem",
+        "http://localhost:4000/microservices/detalheitem",
         {
           codcliente: codcliente,
           tabpreco: tabpreco,
@@ -365,7 +433,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/meusclientes",
+      "http://localhost:4000/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -403,12 +471,14 @@ class Wizard extends Component {
       });
       await this.cargaformapagamento(e.value);
       await this.cargaitens(e.tabeladepreco);
+      console.log(e);
       this.setState({
         loading: false,
         cod_cliente: e.value,
         tabelaprecocliente: e.tabeladepreco,
         descontocanal: e.descontocanal,
-        isescolheucliente: true
+        isescolheucliente: true,
+        forma_pagamento_default: e.condpagamento
       });
       /*
       this.setState({
@@ -423,9 +493,11 @@ class Wizard extends Component {
   };
 
   handleProduto = async e => {
+    //this.focusQuantidadeInput();
     try {
       this.setState({
         precotabela: e.tabela,
+        peso_produto: e.price,
         produto: e
       });
     } catch (err) {
@@ -475,6 +547,7 @@ class Wizard extends Component {
   handlePagamento = e => {
     this.setState({
       forma_pagamento_escolhida: e.value
+      //forma_pagamento_default: null
     });
   };
 
@@ -486,13 +559,43 @@ class Wizard extends Component {
 
   handleQuantidade = e => {
     console.log("QUANTIDADE");
+
     console.log(e.target.value);
     this.setState({
       quantidadeitem: e.target.value
     });
   };
 
+  formatadata = data => format(data, "dd'/'MM'/'yy");
+
+  handleDataEntrega = e => {
+    let resultado = this.formatadata(e);
+    console.log(resultado);
+
+    this.setState({
+      data_entrega: e,
+      data_entrega_formatado: resultado
+    });
+  };
+
+  handleOrdemCompra = e => {
+    this.setState({
+      ordemcompra: e.target.value
+    });
+  };
+
   handleDescontoItem = e => {
+    if (e.target.value > 100) {
+      swal({
+        title: "Desconto Alem do Limite",
+        text: "Você digitou um desconto além do limite",
+        icon: "error",
+        closeOnClickOutside: false,
+        closeOnEsc: false
+        //timer: 4000,
+        //button: false
+      });
+    }
     this.setState({
       descontoitem: e.target.value
     });
@@ -504,7 +607,24 @@ class Wizard extends Component {
     });
   };
 
+  handleObservacaoPedido = e => {
+    this.setState({
+      observacaopedido: e.target.value
+    });
+  };
+
   handleDescontoCampanha = e => {
+    if (e.target.value > 100) {
+      swal({
+        title: "Desconto Alem do Limite",
+        text: "Você digitou um desconto além do limite",
+        icon: "error",
+        closeOnClickOutside: false,
+        closeOnEsc: false
+        //timer: 4000,
+        //button: false
+      });
+    }
     this.setState({
       descontocampanha: e.target.value
     });
@@ -538,8 +658,6 @@ class Wizard extends Component {
       dangerMode: true
     }).then(willDelete => {
       if (willDelete) {
-        
-        
         excluido = true;
         try {
           this.setState({
@@ -550,8 +668,6 @@ class Wizard extends Component {
         }
       }
     });
-
-    console.log(excluido);
 
     if (excluido) {
       console.log("estou aqui dentro");
@@ -581,7 +697,7 @@ class Wizard extends Component {
     });
 
     await axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -675,7 +791,7 @@ class Wizard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -690,6 +806,10 @@ class Wizard extends Component {
       loading: false,
       pedidos: response.data.ttRetorno
     });
+  };
+
+  handleBlurDescontoItem = async evento => {
+    console.log(evento);
   };
 
   handleEnviarPedido = async () => {
@@ -711,7 +831,7 @@ class Wizard extends Component {
 
     /*
     axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -730,7 +850,7 @@ class Wizard extends Component {
 
     /* 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/incluirpedido",
+      "http://localhost:4000/microservices/incluirpedido",
       {
         pedidocompleto
       },
@@ -746,10 +866,38 @@ class Wizard extends Component {
     this.goToDashboard();
   };
 
+  handleCalculoTotais = async() => {
+
+    let peso = 0,
+        valor = null,
+        volume = 0;
+
+    await this.state.produtoscarrinho.map(pedido => {
+
+      peso = pedido.peso + peso;
+      valor = pedido.total + valor;
+      volume = pedido.quantidade + volume;
+      
+     
+    });
+
+    console.log('TOTAIS');
+    console.log(peso);
+    console.log(valor);
+    console.log(volume);
+   this.setState({
+     peso_total: peso,
+     valor_bruto_total: valor,
+     total_volumes: volume
+   });
+
+  };
+
   handleClickAdicionarItemPedido = async () => {
     let desconto_campanha_f,
       desconto_item_f = "",
-      tipo_forma_pagamento = 0;
+      tipo_forma_pagamento = 0,
+      peso_calculado = 0;
     /*
     let valoratuallocalstorage = await this.lerValores("itenspedido");
     if(valoratuallocalstorage !== null){
@@ -783,7 +931,7 @@ class Wizard extends Component {
       //this.state.descontoitem !== null
     ) {
       if (this.state.descontocampanha !== null) {
-        desconto_campanha_f = this.state.descontocampanha.replace("%", "");
+        desconto_campanha_f = this.state.descontocampanha.replace(".", ",");
 
         this.setState({
           descontocampanha: desconto_campanha_f
@@ -795,7 +943,7 @@ class Wizard extends Component {
       }
 
       if (this.state.descontoitem !== null) {
-        desconto_item_f = this.state.descontoitem.replace("%", "");
+        desconto_item_f = this.state.descontoitem.replace(".", ",");
         console.log(desconto_item_f);
 
         this.setState({
@@ -813,8 +961,8 @@ class Wizard extends Component {
         this.state.tabelaprecocliente,
         this.state.forma_pagamento_escolhida,
         this.state.produto.value,
-        this.state.descontoitem.replace("%", ""),
-        this.state.descontocampanha.replace("%", ""),
+        this.state.descontoitem.replace(".", ","),
+        this.state.descontocampanha.replace(".", ","),
         this.state.quantidadeitem
       );
 
@@ -823,13 +971,18 @@ class Wizard extends Component {
       if (!this.state.isBonificacao) {
         tipo_forma_pagamento = this.state.forma_pagamento_escolhida;
       }
-
+      console.log('PRODUTO');
+      console.log(this.state.produto);
+      peso_calculado =
+        Number(this.state.quantidadeitem) * Number(this.state.peso_produto);
+      
       let colecao = this.state.produtoscarrinho.concat([
         {
           tp_pedido: this.state.tipo_pedido_escolhido,
           cod_cliente: this.state.cod_cliente,
           cond_pagamento: tipo_forma_pagamento,
-          ordem_compra: "",
+          ordem_compra: this.state.ordemcompra,
+          dt_entrega: this.state.data_entrega_formatado,
           tabela: this.state.tabelaprecocliente,
           precoitem: j_retorno_item[0].prc_liquido,
           pedido_origem: this.state.pedidoorigeminformado,
@@ -837,12 +990,13 @@ class Wizard extends Component {
           observacoes: "",
           frete: this.state.cod_frete,
           dt_atendimento: "",
-          observacao_logistica: "",
+          observacao_logistica: this.state.observacaopedido,
           codigo: this.state.produto.value,
           item: this.state.produto.label,
           quantidade: this.state.quantidadeitem,
-          campanha: this.state.descontocampanha.replace("%", ""),
-          descontoitem: this.state.descontoitem.replace("%", ""),
+          peso: peso_calculado,
+          campanha: this.state.descontocampanha.replace(".", ","),
+          descontoitem: this.state.descontoitem.replace(".", ","),
           total: j_retorno_item[0].prc_compra_cx
         }
       ]);
@@ -866,9 +1020,12 @@ class Wizard extends Component {
 
       this.setState({
         produtoscarrinho: colecao,
+        peso_total: this.state.peso_total + peso_calculado,
+        valor_bruto_total: Number(j_retorno_item[0].prc_compra_cx) + Number(this.state.valor_bruto_total),
+        total_volumes: Number(this.state.total_volumes) + Number(this.state.quantidadeitem),
         temproduto: true
       });
-
+      
       this.limpacampos();
     } else {
       swal({
@@ -882,8 +1039,6 @@ class Wizard extends Component {
       });
     }
   };
-
-
 
   handleMeusPedidos = async () => {
     this.props.history.push("/vendadireta/pedidos");
@@ -931,6 +1086,10 @@ class Wizard extends Component {
     this.setState({
       appaberto: false
     });
+  };
+
+  deixeiproduto = () => {
+    alert("sim");
   };
 
   goToDashboard = event => {
@@ -1045,7 +1204,7 @@ class Wizard extends Component {
       },
       {
         name: "campanha",
-        Label: "Campanha",
+        Label: "Desconto Campanha",
         options: {
           filter: false
         }
@@ -1059,8 +1218,16 @@ class Wizard extends Component {
         }
       },
       {
+        name: "peso",
+        label: "Peso",
+        options: {
+          filter: false,
+          sort: false
+        }
+      },
+      {
         name: "total",
-        label: "Valor Total",
+        label: "Total",
         options: {
           filter: false,
           sort: false
@@ -1082,8 +1249,15 @@ class Wizard extends Component {
     }
 
     descontoitemcomponent = (
-      <Typography variant="p" gutterBottom>
-        Desconto Item{" "}
+      <React.Fragment>
+        <Typography
+          variant="h6"
+          style={{
+            margin: 10
+          }}
+        >
+          Desconto Item
+        </Typography>
         <TextField
           id="outlined-name"
           //label="Desconto Item"
@@ -1098,13 +1272,20 @@ class Wizard extends Component {
             label: "Desconto Item",
             onChange: this.handleDescontoItem
           }}
-        />{" "}
-      </Typography>
+        />
+      </React.Fragment>
     );
 
     descontocampanhacomponent = (
-      <Typography variant="p" gutterBottom>
-        Desconto Campanha{" "}
+      <React.Fragment>
+        <Typography
+          variant="h6"
+          style={{
+            margin: 10
+          }}
+        >
+          Desconto Campanha
+        </Typography>
         <TextField
           id="outlined-name"
           //label="Desconto Campanha"
@@ -1119,34 +1300,40 @@ class Wizard extends Component {
             label: "Desconto Campanha",
             onChange: this.handleDescontoCampanha
           }}
-        />{" "}
-      </Typography>
+        />
+      </React.Fragment>
     );
 
     quantidadecomponent = (
-      <Typography variant="p" gutterBottom>
-        Quantidade{" "}
+      <React.Fragment>
+        <Typography
+          variant="h6"
+          style={{
+            margin: 10
+          }}
+        >
+          Quantidade
+        </Typography>
         <TextField
           id="standard-number"
+          className={classes.textField}
           //label="Quantidade"
           value={this.state.quantidadeitem}
           //onChange={this.handleQuantidade}
           type="number"
-          margin="normal"
-          className={classes.textField}
-          InputLabelProps={{
-            shrink: true
-          }}
+          //ref={this.textQuantidadeInput}
+          //margin="normal"
           variant="outlined"
           //margin="normal"
           InputProps={{
             inputComponent: TextMaskQuantidade,
             value: this.state.quantidadeitem,
-            label: "Quantidade",
+            //label: "Quantidade",
             onChange: this.handleQuantidade
+            //inputRef: this.textQuantidadeInput
           }}
-        />{" "}
-      </Typography>
+        />
+      </React.Fragment>
     );
 
     if (this.state.pedidoemandamento) {
@@ -1193,7 +1380,7 @@ class Wizard extends Component {
           <Grid container justify="center">
             <Spinner isFetching={this.state.loading} color="#5A6AAA" />
             <Grid
-              spacing={24}
+              spacing={2}
               alignItems="center"
               justify="center"
               container
@@ -1201,230 +1388,314 @@ class Wizard extends Component {
             >
               <Grid item xs={12}>
                 <Back />
-                <Container>
-                  <div className={classes.topBar}>
-                    <div className={classes.block}>
-                      <Typography variant="h6" gutterBottom>
-                        Pedido
-                      </Typography>
-                      <Typography variant="body1">
-                        Envie um novo pedido de Venda, Bonificação ou Consumo.
-                      </Typography>
-                    </div>
-                    <div>{recuperarpedido}</div>
-                  </div>
 
-                  <Paper
-                    className={classes.paper}
-                    style={{
-                      position: "relative"
-                    }}
-                  >
-                    <Mensagem
-                      open={this.state.loading}
-                      mensagem={this.state.mensagemloader}
-                      variant={"info"}
-                    />
-
-                    {this.state.isescolheucliente && (
-                      <React.Fragment>
-                        <Typography variant="h6" gutterBottom>
-                          <Box color="primary.main">
-                            Tabela de preço do cliente:{" "}
-                            {this.state.tabelaprecocliente}
-                          </Box>
-                        </Typography>
-                        <Typography variant="h6" gutterBottom>
-                          <Box color="primary.main">
-                            Desconto Canal: {this.state.descontocanal}
-                          </Box>
-                        </Typography>
-                        <Typography variant="h6" gutterBottom>
-                          <Box color="primary.main">
-                            {this.state.tipopedidodescricao}
-                          </Box>
-                        </Typography>
-                      </React.Fragment>
-                    )}
-
-                    <TextField
-                      id="outlined-name"
-                      label="Numero Pedido"
-                      //value={values.valor}
-                      margin="normal"
-                      variant="outlined"
-                    />
-
+                <div className={classes.topBar}>
+                  <div className={classes.block}>
                     <Typography variant="h6" gutterBottom>
-                      Tipo do Pedido
+                      Pedido
                     </Typography>
+                    <Typography variant="body1">
+                      Envie um novo pedido de Venda, Bonificação ou Consumo.
+                    </Typography>
+                  </div>
+                  <div>{recuperarpedido}</div>
+                </div>
+
+                <Paper
+                  className={classes.paper}
+                  style={{
+                    position: "relative"
+                  }}
+                >
+                  <Mensagem
+                    open={this.state.loading}
+                    mensagem={this.state.mensagemloader}
+                    variant={"info"}
+                  />
+
+                  {this.state.isescolheucliente && (
+                    <React.Fragment>
+                      <Typography variant="h6" gutterBottom>
+                        <Box color="primary.main">
+                          Tabela : {this.state.tabelaprecocliente}
+                        </Box>
+                      </Typography>
+                      <Typography variant="h6" gutterBottom>
+                        <Box color="primary.main">
+                          Canal: {this.state.descontocanal}
+                        </Box>
+                      </Typography>
+                      <Typography variant="h6" gutterBottom>
+                        <Box color="primary.main">
+                          {this.state.tipopedidodescricao}
+                        </Box>
+                      </Typography>
+                    </React.Fragment>
+                  )}
+
+                  <TextField
+                    id="outlined-name"
+                    label="Numero Pedido (Opcional)"
+                    value={this.state.ordemcompra}
+                    onChange={this.handleOrdemCompra}
+                    //value={values.valor}
+                    margin="normal"
+                    variant="outlined"
+                    autoFocus
+                  />
+
+                  <Typography variant="h6" gutterBottom>
+                    Tipo do Pedido
+                  </Typography>
+                  <Select
+                    onChange={this.handleTipoPedido}
+                    options={this.state.tipo_pedido}
+                    isLoading={this.state.loading}
+                    isDisabled={this.state.temproduto}
+                  ></Select>
+                  {pedidoorigem}
+                  {this.state.escolheutipopedido && (
+                    <Typography variant="h6" gutterBottom>
+                      Escolha o Cliente
+                    </Typography>
+                  )}
+                  {this.state.escolheutipopedido && (
                     <Select
-                      onChange={this.handleTipoPedido}
-                      options={this.state.tipo_pedido}
-                      isLoading={this.state.loading}
+                      onChange={this.handleCliente}
+                      options={this.state.clientes}
                       isDisabled={this.state.temproduto}
                     ></Select>
-                    {pedidoorigem}
-                    {this.state.escolheutipopedido && (
-                      <Typography variant="h6" gutterBottom>
-                        Escolha o Cliente
-                      </Typography>
-                    )}
-                    {this.state.escolheutipopedido && (
-                      <Select
-                        onChange={this.handleCliente}
-                        options={this.state.clientes}
-                        isDisabled={this.state.temproduto}
-                      ></Select>
-                    )}
-
-                    {!this.state.isBonificacao && (
-                      <React.Fragment>
-                        {this.state.isescolheucliente && (
-                          <Typography variant="h6" gutterBottom>
-                            Pagamento
-                          </Typography>
-                        )}
-                        {this.state.isescolheucliente && (
-                          <Select
-                            onChange={this.handlePagamento}
-                            options={this.state.pagamento}
-                          ></Select>
-                        )}
-                      </React.Fragment>
-                    )}
-                    {this.state.isescolheucliente && (
-                      <Typography variant="h6" gutterBottom>
-                        Frete
-                      </Typography>
-                    )}
-                    {this.state.isescolheucliente && (
-                      <Select
-                        onChange={this.handleFrete}
-                        options={this.state.frete}
-                      ></Select>
-                    )}
-                  </Paper>
-                  {this.state.isescolheucliente && (
-                    <Grid item xs={12}>
-                      <Paper
-                        className={classes.paper}
-                        style={{ position: "relative" }}
-                      >
-                        <Typography variant="h6" gutterBottom>
-                          Escolha os Produtos
-                        </Typography>
-                        <div className={classes.inlining}>
-                          <IconButton aria-label="cart">
-                            <Badge
-                              className={classes.badge}
-                              badgeContent={this.state.produtoscarrinho.length}
-                              color="primary"
-                            >
-                              <ShoppingCartIcon />
-                            </Badge>
-                          </IconButton>
-                          <Typography
-                            className={classes.inlining}
-                            variant="subtitle2"
-                            gutterBottom
-                          >
-                            Produtos no Carrinho
-                          </Typography>
-                        </div>
-                        <Select
-                          options={this.state.produtos}
-                          onChange={this.handleProduto}
-                          className={classes.selectproduto}
-                        ></Select>
-
-                        <Typography variant="h6" gutterBottom>
-                          <Box color="primary.main">
-                            Tabela: R$: {this.state.precotabela}
-                          </Box>
-                        </Typography>
-                        {quantidadecomponent}
-                        {descontoitemcomponent}
-                        {descontocampanhacomponent}
-                        <Divider />
-
-                        <Button
-                          variant="outlined"
-                          className={classes.outlinedButtom}
-                          onClick={this.handleClickAdicionarItemPedido}
-                          startIcon={<CloudUploadIcon />}
-                        >
-                          Adicionar
-                        </Button>
-                      </Paper>
-
-                      <Paper
-                        //className={classes.papermuitables}
-                        style={{ position: "relative" }}
-                      >
-                        <div style={{ boxSizing: "content-box" }}>
-                          <MUIDataTable
-                            title={"Produtos"}
-                            //key={this.state.produtoscarrinho}
-                            data={this.state.produtoscarrinho}
-                            columns={columns}
-                            options={options}
-                          />
-                        </div>
-                      </Paper>
-                    </Grid>
                   )}
-                  {this.state.produtoscarrinho.length > 0 && (
-                    <Paper className={classes.paper}>
-                      <div className={classes.buttonBar}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          className={classes.actionButtom}
-                          onClick={this.handleEnviarPedido}
-                          startIcon={<CloudUploadIcon />}
+
+                  {!this.state.isBonificacao && (
+                    <React.Fragment>
+                      {this.state.isescolheucliente && (
+                        <Typography variant="h6" gutterBottom>
+                          Pagamento
+                        </Typography>
+                      )}
+                      {this.state.isescolheucliente && (
+                        <Select
+                          onChange={this.handlePagamento}
+                          options={this.state.pagamento}
+                          isDisabled={this.state.temproduto}
+                          //value={this.state.pagamento.filter(
+                          //  option =>
+                          //    option.value ===
+                          //    this.state.forma_pagamento_default
+                          //)}
+                        ></Select>
+                      )}
+                    </React.Fragment>
+                  )}
+                  {this.state.isescolheucliente && (
+                    <Typography variant="h6" gutterBottom>
+                      Frete
+                    </Typography>
+                  )}
+                  {this.state.isescolheucliente && (
+                    <Select
+                      onChange={this.handleFrete}
+                      options={this.state.frete}
+                      isDisabled={this.state.temproduto}
+                    ></Select>
+                  )}
+                  <Divider />
+                  {this.state.isescolheucliente && (
+                    <Typography variant="h6" gutterBottom>
+                      Data Entrega
+                    </Typography>
+                  )}
+                  {this.state.isescolheucliente && (
+                    <MuiPickersUtilsProvider
+                      utils={DateFnsUtils}
+                      locale={ptLocale}
+                    >
+                      <KeyboardDatePicker
+                        margin="normal"
+                        id="date-picker-dialog"
+                        format="dd/MM/yyyy"
+                        value={this.state.data_entrega}
+                        onChange={this.handleDataEntrega}
+                        isDisabled={this.state.temproduto}
+                        KeyboardButtonProps={{
+                          "aria-label": "change date"
+                        }}
+                      />
+                    </MuiPickersUtilsProvider>
+                  )}
+                  {this.state.isescolheucliente && (
+                    <Typography variant="h6" gutterBottom>
+                      Observação
+                    </Typography>
+                  )}
+                  {this.state.isescolheucliente && (
+                    <TextareaAutosize
+                      id="observacaopedido"
+                      label="Opcional"
+                      rowsMin="6"
+                      value={this.state.observacaopedido}
+                      onChange={this.handleObservacaoPedido}
+                      readonly={this.state.temproduto}
+                      margin="normal"
+                      style={{ height: 180, width: 700, fontSize: 18 }}
+                    />
+                  )}
+                </Paper>
+                {this.state.isescolheucliente && (
+                  <Grid item xs={12}>
+                    <Paper
+                      className={classes.paper}
+                      style={{ position: "relative" }}
+                    >
+                      <Typography variant="h6" gutterBottom>
+                        Escolha os Produtos
+                      </Typography>
+                      <div className={classes.inlining}>
+                        <IconButton aria-label="cart">
+                          <Badge
+                            className={classes.badge}
+                            badgeContent={this.state.produtoscarrinho.length}
+                            color="primary"
+                          >
+                            <ShoppingCartIcon />
+                          </Badge>
+                        </IconButton>
+                        <Typography
+                          className={classes.inlining}
+                          variant="subtitle2"
+                          gutterBottom
                         >
-                          Enviar
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          onClick={this.handleClickExcluirPedido}
-                          className={classes.actionButtom}
-                          startIcon={<DeleteIcon />}
+                          Produtos no Carrinho
+                        </Typography>
+                      </div>
+                      <Select
+                        options={this.state.produtos}
+                        onChange={this.handleProduto}
+                        onLeave={this.deixeiproduto}
+                        className={classes.selectproduto}
+                      ></Select>
+                      <Divider />
+
+                      <div className={classes.totais}>
+                        <Grid
+                          alignItems="center"
+                          justify="center"
+                          container
+                          className={classes.gridtotais}
                         >
-                          Excluir
-                        </Button>
+                          <Typography variant="h6" gutterBottom>
+                            <Box color="primary.main">
+                              Tabela: R$: {this.state.precotabela}
+                            </Box>
+                          </Typography>
+
+                          <Typography variant="h6" gutterBottom>
+                            <Box color="primary.main">
+                              Peso Bruto Total: KG: {this.state.peso_total}
+                            </Box>
+                          </Typography>
+
+                          <Typography variant="h6" gutterBottom>
+                            <Box color="primary.main">
+                              Valor Bruto Total: R$:{" "}
+                              {this.state.valor_bruto_total}
+                            </Box>
+                          </Typography>
+
+                          <Typography variant="h6" gutterBottom>
+                            <Box color="primary.main">
+                              Volume Total: UN: {this.state.total_volumes}
+                            </Box>
+                          </Typography>
+                        </Grid>
+                      </div>
+
+                      <div className={classes.inlining}>
+                        <Grid alignItems="center" justify="center" container>
+                          {quantidadecomponent}
+                          {descontoitemcomponent}
+                          {descontocampanhacomponent}
+                        </Grid>
+                      </div>
+                      <Divider />
+
+                      <Button
+                        variant="outlined"
+                        className={classes.outlinedButtom}
+                        onClick={this.handleClickAdicionarItemPedido}
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Adicionar
+                      </Button>
+                    </Paper>
+
+                    <Paper
+                      //className={classes.papermuitables}
+                      style={{ position: "relative" }}
+                    >
+                      <div style={{ boxSizing: "content-box" }}>
+                        <MUIDataTable
+                          title={"Produtos"}
+                          //key={this.state.produtoscarrinho}
+                          data={this.state.produtoscarrinho}
+                          columns={columns}
+                          options={options}
+                        />
                       </div>
                     </Paper>
-                  )}
-                  <Modal
-                    aria-labelledby="simple-modal-title"
-                    aria-describedby="simple-modal-description"
-                    open={this.state.open}
-                    onClose={this.handleClose}
-                    style={{ alignItems: "center", justifyContent: "center" }}
+                  </Grid>
+                )}
+                {this.state.produtoscarrinho.length > 0 && (
+                  <Paper className={classes.paper}>
+                    <div className={classes.buttonBar}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.actionButtom}
+                        onClick={this.handleEnviarPedido}
+                        startIcon={<CloudUploadIcon />}
+                      >
+                        Enviar
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={this.handleClickExcluirPedido}
+                        className={classes.actionButtom}
+                        startIcon={<DeleteIcon />}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                  </Paper>
+                )}
+                <Modal
+                  aria-labelledby="simple-modal-title"
+                  aria-describedby="simple-modal-description"
+                  open={this.state.open}
+                  onClose={this.handleClose}
+                  style={{ alignItems: "center", justifyContent: "center" }}
+                >
+                  <Slide
+                    direction="up"
+                    in={this.state.open}
+                    mountOnEnter
+                    unmountOnExit
                   >
-                    <Slide
-                      direction="up"
-                      in={this.state.open}
-                      mountOnEnter
-                      unmountOnExit
-                    >
-                      <div style={getModalStyle()} className={classes.paper}>
-                        <Typography variant="title" id="modal-title">
-                          Text in a modal
-                        </Typography>
-                        <Typography
-                          variant="subheading"
-                          id="simple-modal-description"
-                        >
-                          Duis mollis, est non commodo luctus, nisi erat
-                          porttitor ligula.
-                        </Typography>
-                      </div>
-                    </Slide>
-                  </Modal>
-                </Container>
+                    <div style={getModalStyle()} className={classes.paper}>
+                      <Typography variant="title" id="modal-title">
+                        Text in a modal
+                      </Typography>
+                      <Typography
+                        variant="subheading"
+                        id="simple-modal-description"
+                      >
+                        Duis mollis, est non commodo luctus, nisi erat porttitor
+                        ligula.
+                      </Typography>
+                    </div>
+                  </Slide>
+                </Modal>
               </Grid>
             </Grid>
           </Grid>

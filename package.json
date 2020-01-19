@@ -16,6 +16,7 @@
     "express": "^4.17.1",
     "gh-pages": "^2.0.1",
     "mui-datatables": "^2.13.3",
+    "next": "^9.1.7",
     "numeral": "^2.0.6",
     "opencollective-postinstall": "^2.0.2",
     "query-string": "^6.2.0",
