@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Form, Container } from "./styles";
-import Logo from "../../images/loingleza.svg";
+import Logo from "../../images/fundo.png";
 import api from "../../services/api";
 import { login } from "../../services/auth";
 import Spinner from "../../loading";

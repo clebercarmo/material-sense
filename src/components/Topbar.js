@@ -81,10 +81,7 @@ const styles = theme => ({
 
 class Topbar extends Component {
 
-  constructor(props){
-    super(props);
-    
-  }
+ 
 
   state = {
     value: 0,
@@ -143,7 +140,7 @@ class Topbar extends Component {
     return (
       <AppBar position="absolute" color="default" className={classes.appBar}>
         <Toolbar>
-            <Grid container spacing={24} alignItems="baseline">
+            <Grid container spacing={10} alignItems="baseline">
               <Grid item xs={12} className={classes.flex}>
                   <div className={classes.inline}>
                     <Typography variant="h6" color="inherit" noWrap>

@@ -9,15 +9,14 @@ import FaixaDatas from "./faixadata/FaixaDatas";
 import Paper from "@material-ui/core/Paper";
 import Spinner from "../loading";
 import api from "../services/api";
-import { parseISO, format, formatRelative, formatDistance } from "date-fns";
-import { zonedTimeToUtc } from "date-fns-tz";
+//import { parseISO, format, formatRelative, formatDistance } from "date-fns";
+import { format } from "date-fns";
+//import { zonedTimeToUtc } from "date-fns-tz";
 import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
 import DoneIcon from "@material-ui/icons/Done";
 import Chip from "@material-ui/core/Chip";
 
 const backgroundShape = require("../images/shape.svg");
-
-  
 
 const styles = theme => ({
   root: {
@@ -31,13 +30,13 @@ const styles = theme => ({
     padding: 20,
     paddingBottom: 200
   },
-   grid: {
-     width: 1400,
-     margin: `0 ${theme.spacing(2)}px`,
-     [theme.breakpoints.down("sm")]: {
-       width: "calc(100% - 20px)"
-     }
-   },
+  grid: {
+    width: 1400,
+    margin: `0 ${theme.spacing(2)}px`,
+    [theme.breakpoints.down("sm")]: {
+      width: "calc(100% - 20px)"
+    }
+  },
   paper: {
     padding: theme.spacing(3),
     margin: theme.spacing(2),
@@ -313,16 +312,13 @@ class Cards extends Component {
           sort: false,
           empty: true,
           customBodyRender: (value, tableMeta, updateValue) => {
-
-            
-               return (
-                 <Chip
-                   label={tableMeta.rowData[12]}
-                   color="primary"
-                   style={{ backgroundColor: "#04D9C4" }}
-                 />
-               );
-           
+            return (
+              <Chip
+                label={tableMeta.rowData[12]}
+                color="primary"
+                style={{ backgroundColor: "#04D9C4" }}
+              />
+            );
           }
         }
       },
@@ -380,7 +376,7 @@ class Cards extends Component {
            );
 
        },*/
-       
+
       textLabels: {
         pagination: {
           next: "Próximo",
@@ -421,18 +417,17 @@ class Cards extends Component {
                   subtitle="Ultimos pedidos enviados, para melhor detalhe favor usar o filtro."
                 />
 
-                
-                  <Paper
-                    className={classes.paper}
-                    style={{ position: "relative" }}
-                  >
-                    <FaixaDatas
-                      dtinicio={this.calbackdatainicio}
-                      dtfim={this.calbackdatafim}
-                      click={this.calbackenviarsolicitacao}
-                    />
-                  </Paper>
-                
+                <Paper
+                  className={classes.paper}
+                  style={{ position: "relative" }}
+                >
+                  <FaixaDatas
+                    dtinicio={this.calbackdatainicio}
+                    dtfim={this.calbackdatafim}
+                    click={this.calbackenviarsolicitacao}
+                  />
+                </Paper>
+
                 <Grid item xs={12}>
                   <Paper
                     //className={classes.papermuitables}

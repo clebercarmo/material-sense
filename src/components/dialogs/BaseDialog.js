@@ -14,6 +14,9 @@ const styles = theme => ({
     flexDirection: 'column',
     justifyContent: 'center'
   },
+    loadingState: {
+      opacity: 0.05
+    },
   bottomMargin: {
     marginBottom: theme.spacing(2)
   }

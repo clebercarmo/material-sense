@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
+import {  withRouter } from "react-router-dom";
 import withStyles from "@material-ui/styles/withStyles";
 
 import BaseDialog from "./BaseDialog";
@@ -13,8 +13,6 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Loading from "../common/Loading";
-
-const logo = require("../../images/logo.svg");
 
 
 
@@ -30,12 +28,6 @@ const styles = theme => ({
     loadingState: {
       opacity: 0.05
     },
-  stepsContainer: {
-    marginLeft: 72,
-    textAlign: "left",
-    marginTop: 20,
-    height: 65
-  },
   bottomMargin: {
     marginBottom: theme.spacing(2)
   }

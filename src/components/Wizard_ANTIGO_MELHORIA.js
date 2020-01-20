@@ -776,7 +776,7 @@ class Wizard extends Component {
           <Grid container justify="center">
             <Spinner isFetching={this.state.loading} color="#5A6AAA" />
             <Grid
-              spacing={24}
+              spacing={10}
               alignItems="center"
               justify="center"
               container

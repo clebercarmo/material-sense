@@ -176,7 +176,7 @@ class Signup extends Component {
         <div className={classes.root}>
           <Back />
           <Grid container justify="center">
-            <Grid spacing={24} alignItems="center" justify="center" container className={classes.grid}>
+            <Grid spacing={12} alignItems="center" justify="center" container className={classes.grid}>
               <Grid item xs={12}>
                 <div className={classes.logo}>
                   <img width={100} height={100} src={logo} alt="" />

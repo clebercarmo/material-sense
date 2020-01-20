@@ -1,20 +1,12 @@
 import React, { Component } from "react";
 import withStyles from "@material-ui/styles/withStyles";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
 //import Select from '@material-ui/core/Select';
 import Back from "./common/Back";
 import Select from "react-select";
@@ -25,49 +17,27 @@ import axios from "axios";
 import MUIDataTable from "mui-datatables";
 import TextField from "@material-ui/core/TextField";
 import TextareaAutosize from "@material-ui/core/TextareaAutosize";
-import PropTypes from "prop-types";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import SaveIcon from "@material-ui/icons/Save";
 import DeleteIcon from "@material-ui/icons/Delete";
-
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
 import Box from "@material-ui/core/Box";
 import Modal from "@material-ui/core/Modal";
 import Slide from "@material-ui/core/Slide";
 import Mensagem from "./mensagem";
-import { css } from "@emotion/core";
-import clsx from "clsx";
 import TextMaskPercent from "./mask/maskporcentagem";
 import TextMaskQuantidade from "./mask/maskquantidade";
-import CurrencyInput from "./mask/maskporcentagemnew";
 import Divider from "@material-ui/core/Divider";
 import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
 import Badge from "@material-ui/core/Badge";
 import IconButton from "@material-ui/core/IconButton";
-import Drawer from "@material-ui/core/Drawer";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import MenuIcon from "@material-ui/icons/Menu";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
 import HowToVoteIcon from "@material-ui/icons/HowToVote";
-import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import DateFnsUtils from "@date-io/date-fns";
 import ptLocale from "date-fns/locale/pt-BR";
 import "date-fns";
-import { parseISO, format, formatRelative, formatDistance } from "date-fns";
+import { format } from "date-fns";
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
 } from "@material-ui/pickers";
-const qs = require("query-string");
 const backgroundShape = require("../images/shape.svg");
 
 const numeral = require("numeral");
@@ -170,7 +140,7 @@ const styles = theme => ({
 
 function getModalStyle() {
   const top = 25;
-  const left = 25;
+  
 
   return {
     top: `${top}%`,
@@ -180,8 +150,7 @@ function getModalStyle() {
   };
 }
 
-const drawerWidth = 240;
-let excluido = false;
+
 
 class Wizard extends Component {
   focusQuantidadeInput() {
@@ -816,7 +785,7 @@ class Wizard extends Component {
     let pedidocompleto = await this.lerValores("itenspedido");
     pedidocompleto = JSON.parse(pedidocompleto);
     console.log(pedidocompleto);
-    const bodyFormData = new FormData();
+    
 
     await swal({
       title: "Enviar Pedido?",
@@ -865,7 +834,7 @@ class Wizard extends Component {
     //await this.apagarValores("itenspedido");
     this.goToDashboard();
   };
-
+/*
   handleCalculoTotais = async() => {
 
     let peso = 0,
@@ -892,6 +861,7 @@ class Wizard extends Component {
    });
 
   };
+  */
 
   handleClickAdicionarItemPedido = async () => {
     let desconto_campanha_f,

@@ -26,7 +26,6 @@ import FindInPageIcon from '@material-ui/icons/FindInPage';
 import DoneIcon from "@material-ui/icons/Done";
 import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import SwipeDialog from "./dialogs/SwipeDialog";
-import swal from "sweetalert";
 const numeral = require('numeral');
 numeral.defaultFormat('0,000');
 
@@ -133,6 +132,7 @@ const monthRange = Months;
 class Dashboard extends Component {
   state = {
     loading: true,
+    learnMoredialog:false,
     Pedidodialog: false,
     amount: 15000,
     period: 3,
@@ -318,12 +318,6 @@ class Dashboard extends Component {
   render() {
     const { classes } = this.props;
     const {
-      amount,
-      period,
-      start,
-      monthlyPayment,
-      monthlyInterest,
-      data,
       loading
     } = this.state;
     const currentPath = this.props.location.pathname;

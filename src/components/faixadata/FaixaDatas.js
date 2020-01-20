@@ -9,11 +9,10 @@ import {
   KeyboardDatePicker
 } from "@material-ui/pickers";
 import ButtonBarEnviar from "../buttons/ButtonBarEnviar";
-import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
+
 
 export default function FaixaDatas(props) {
-  const { dtinicio, dtfim, click } = props;
+  //const { dtinicio, dtfim, click } = props;
 
   // The first commit of Material-UI
   const [selectedDate, setSelectedDate] = React.useState(new Date());
