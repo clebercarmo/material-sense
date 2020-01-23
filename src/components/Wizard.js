@@ -7,7 +7,6 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-//import Select from '@material-ui/core/Select';
 import Back from "./common/Back";
 import Select from "react-select";
 import api from "../services/api";
@@ -22,7 +21,6 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import Box from "@material-ui/core/Box";
 import Modal from "@material-ui/core/Modal";
 import Slide from "@material-ui/core/Slide";
-import Mensagem from "./mensagem";
 import TextMaskPercent from "./mask/maskporcentagem";
 import TextMaskQuantidade from "./mask/maskquantidade";
 import Divider from "@material-ui/core/Divider";
@@ -54,10 +52,10 @@ const styles = theme => ({
     paddingBottom: 200
   },
   grid: {
-    width: 1200,
+    width: 1800,
     margin: `0 ${theme.spacing(2)}px`,
     [theme.breakpoints.down("sm")]: {
-      width: "calc(100% - 20px)"
+      width: "calc(100% - 10px)"
     }
   },
   gridtotais: {
@@ -112,6 +110,11 @@ const styles = theme => ({
     alignItems: "center",
     marginBottom: 42
   },
+  select: {
+    width: "50%"
+    //fontSize: 18
+  },
+
   formControl: {
     width: "100%"
   },
@@ -166,6 +169,7 @@ class Wizard extends Component {
     this.focusQuantidadeInput = this.focusQuantidadeInput.bind(this);
 
     this.state = {
+      produto_clicado: null,
       data_entrega_formatado: "",
       data_entrega: null,
       cod_cliente: "",
@@ -289,8 +293,6 @@ class Wizard extends Component {
       return pedido.tp_pedido === "V";
     });
 
-    console.log(pedidosvenda);
-
     this.setState({
       loading: false,
       pedidosvenda: pedidosvenda
@@ -337,8 +339,6 @@ class Wizard extends Component {
     this.setState({
       pagamento: response.data.ttRetorno
     });
-
-    console.log(response.data.ttRetorno);
   };
 
   valorvendaitem = async (
@@ -440,7 +440,7 @@ class Wizard extends Component {
       });
       await this.cargaformapagamento(e.value);
       await this.cargaitens(e.tabeladepreco);
-      console.log(e);
+
       this.setState({
         loading: false,
         cod_cliente: e.value,
@@ -653,6 +653,66 @@ class Wizard extends Component {
     });
   };
 
+  AlterarItempedido = e => {
+    console.log("Valor da linha da tabela");
+    console.log(e);
+  };
+
+  _handleKeyDown = async e => {
+    e.persist();
+    
+    if (e.key === "Enter" || e.key === "Escape") {
+
+
+      console.log(e.key);
+      console.log("value", e.target.value);
+      console.log('Produto Clicado dentro do enter');
+      console.log(this.state.produto_clicado);
+      let lista_pedido = JSON.parse(await this.lerValores("itenspedido"));
+      let pedido = lista_pedido.filter(p => {
+        return p.item === this.state.produto_clicado[0];
+      });
+      console.log("Registro Encontrado");
+      console.log(pedido);
+      
+     
+      const j_retorno_item = await this.valorvendaitem(
+        pedido[0].cod_cliente,
+        pedido[0].tabela,
+        pedido[0].cond_pagamento,
+        pedido[0].codigo,
+        this.state.produto_clicado[5].replace(".", ","),
+        this.state.produto_clicado[6].replace(".", ","),
+        e.target.value
+      );
+      console.log('Retorno Recalculo');
+      console.log(j_retorno_item);
+      console.log('carrinho de compras');
+      console.log(this.state.produtoscarrinho);
+      //let pedido_busca = JSON.parse(this.state.produtoscarrinho);
+      const pedido_alterado = lista_pedido.map((value, index, array) => {
+        if (value.item === this.state.produto_clicado[0]) {
+          value.precoitem = j_retorno_item[0].prc_liquido;
+          value.prc_tabela = j_retorno_item[0].prc_tabela;
+          value.total = j_retorno_item[0].prc_compra_cx;
+          value.quantidade = j_retorno_item[0].quantidade;
+          value.peso = j_retorno_item[0].peso_bruto;
+        }
+        return value;
+      });
+      console.log('ITEM ALTERADO');
+      console.log(pedido_alterado);
+      this.gravarValores("itenspedido", JSON.stringify(pedido_alterado));
+
+      this.setState({
+        produtoscarrinho: pedido_alterado
+      });
+      
+
+    }
+    
+  };
+
   metodoenviarpedido = async pedidocompleto => {
     let mensagemsucessoantes,
       mensagemsucessodepois = 0;
@@ -683,7 +743,7 @@ class Wizard extends Component {
           "Numero Pedido: " +
           response.data
             .slice(mensagemsucessoantes, mensagemsucessodepois)
-            .replace(/[\}\"\]]/g, "");
+            .replace(/[}"\]]/g, "");
         if (mensagemsucessoantes === 13) {
           mensagemsucessoantes = response.data.trim().indexOf("mensagem") + 2;
           mensagemsucessodepois = mensagemsucessoantes + 100;
@@ -693,7 +753,7 @@ class Wizard extends Component {
             "Motivo: " +
             response.data
               .slice(mensagemsucessoantes, mensagemsucessodepois)
-              .replace(/[\}\"\]]/g, "");
+              .replace(/[}"\]]/g, "");
         }
 
         swal({
@@ -770,7 +830,7 @@ class Wizard extends Component {
         }
       }
     );
-    console.log(response.data.ttRetorno);
+
     this.setState({
       loading: false,
       pedidos: response.data.ttRetorno
@@ -785,7 +845,6 @@ class Wizard extends Component {
     let pedidocompleto = await this.lerValores("itenspedido");
     pedidocompleto = JSON.parse(pedidocompleto);
     console.log(pedidocompleto);
-    
 
     await swal({
       title: "Enviar Pedido?",
@@ -834,7 +893,7 @@ class Wizard extends Component {
     //await this.apagarValores("itenspedido");
     this.goToDashboard();
   };
-/*
+  /*
   handleCalculoTotais = async() => {
 
     let peso = 0,
@@ -941,11 +1000,11 @@ class Wizard extends Component {
       if (!this.state.isBonificacao) {
         tipo_forma_pagamento = this.state.forma_pagamento_escolhida;
       }
-      console.log('PRODUTO');
+      console.log("PRODUTO");
       console.log(this.state.produto);
       peso_calculado =
         Number(this.state.quantidadeitem) * Number(this.state.peso_produto);
-      
+
       let colecao = this.state.produtoscarrinho.concat([
         {
           tp_pedido: this.state.tipo_pedido_escolhido,
@@ -955,6 +1014,8 @@ class Wizard extends Component {
           dt_entrega: this.state.data_entrega_formatado,
           tabela: this.state.tabelaprecocliente,
           precoitem: j_retorno_item[0].prc_liquido,
+          prc_tabela: j_retorno_item[0].prc_tabela,
+          per_desc_canal: j_retorno_item[0].per_desc_canal,
           pedido_origem: this.state.pedidoorigeminformado,
           data_atendimento: "",
           observacoes: "",
@@ -991,11 +1052,14 @@ class Wizard extends Component {
       this.setState({
         produtoscarrinho: colecao,
         peso_total: this.state.peso_total + peso_calculado,
-        valor_bruto_total: Number(j_retorno_item[0].prc_compra_cx) + Number(this.state.valor_bruto_total),
-        total_volumes: Number(this.state.total_volumes) + Number(this.state.quantidadeitem),
+        valor_bruto_total:
+          Number(j_retorno_item[0].prc_compra_cx) +
+          Number(this.state.valor_bruto_total),
+        total_volumes:
+          Number(this.state.total_volumes) + Number(this.state.quantidadeitem),
         temproduto: true
       });
-      
+
       this.limpacampos();
     } else {
       swal({
@@ -1121,6 +1185,10 @@ class Wizard extends Component {
         //console.log(rowsDeleted, "were deleted!");
       },
       onRowClick: (rowData, rowState) => {
+        
+        this.setState({
+          produto_clicado: rowData
+        });
         console.log(rowData, rowState);
       },
       textLabels: {
@@ -1159,15 +1227,39 @@ class Wizard extends Component {
           filter: false,
           customBodyRender: (value, tableMeta, updateValue) => (
             <FormControlLabel
-              control={<TextField value={value || ""} type="number" />}
-              onChange={event => updateValue(event.target.value)}
+              control={
+                <TextField
+                  value={value || ""}
+                  type="number"
+                  className={classes.textField}
+                />
+              }
+              onKeyDown={this._handleKeyDown}
+              onChange={event => {
+                //this.AlterarItempedido(event)
+                updateValue(event.target.value);
+              }}
             />
           )
         }
       },
       {
+        name: "prc_tabela",
+        label: "Tabela",
+        options: {
+          filter: false
+        }
+      },
+      {
         name: "precoitem",
         label: "Valor Venda",
+        options: {
+          filter: false
+        }
+      },
+      {
+        name: "per_desc_canal",
+        Label: "Desconto Canal",
         options: {
           filter: false
         }
@@ -1377,12 +1469,6 @@ class Wizard extends Component {
                     position: "relative"
                   }}
                 >
-                  <Mensagem
-                    open={this.state.loading}
-                    mensagem={this.state.mensagemloader}
-                    variant={"info"}
-                  />
-
                   {this.state.isescolheucliente && (
                     <React.Fragment>
                       <Typography variant="h6" gutterBottom>
@@ -1449,6 +1535,7 @@ class Wizard extends Component {
                           onChange={this.handlePagamento}
                           options={this.state.pagamento}
                           isDisabled={this.state.temproduto}
+
                           //value={this.state.pagamento.filter(
                           //  option =>
                           //    option.value ===
@@ -1487,7 +1574,6 @@ class Wizard extends Component {
                         format="dd/MM/yyyy"
                         value={this.state.data_entrega}
                         onChange={this.handleDataEntrega}
-                        isDisabled={this.state.temproduto}
                         KeyboardButtonProps={{
                           "aria-label": "change date"
                         }}
@@ -1506,7 +1592,7 @@ class Wizard extends Component {
                       rowsMin="6"
                       value={this.state.observacaopedido}
                       onChange={this.handleObservacaoPedido}
-                      readonly={this.state.temproduto}
+                      readOnly={this.state.temproduto}
                       margin="normal"
                       style={{ height: 180, width: 700, fontSize: 18 }}
                     />

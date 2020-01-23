@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 const TextMaskPercent = (props) => {
 
   const {
-    inputRef,
     className,
     label,
     value,
@@ -29,7 +28,6 @@ const TextMaskPercent = (props) => {
 
   return (
     <MaskedInput
-      ref={inputRef}
       className={className}
       label={label}
       value={value}

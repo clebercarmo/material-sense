@@ -37,7 +37,6 @@ export const Form = styled.form `
     height: 46px;
     margin-bottom: 15px;
     padding: 15px 12px;
-    color: #777;
     font-size: 15px;
     width: 90%;
     border: 1px solid #ddd;

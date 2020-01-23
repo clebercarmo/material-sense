@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Form, Container } from "./styles";
-import Logo from "../../images/fundo.png";
+import Logo from "../../images/logouau.svg";
 import api from "../../services/api";
 import { login } from "../../services/auth";
 import Spinner from "../../loading";
@@ -79,8 +79,11 @@ class SignIn extends Component {
           <img src={Logo} alt="App Ingleza" />
           
           {this.state.error && <p>{this.state.error}</p>}
+          
           <input
             type="text"
+            label="Usuario"
+            id="usuario"
             placeholder="Usuario"
             onChange={e =>
               this.setState({
@@ -88,8 +91,11 @@ class SignIn extends Component {
               })
             }
           />
+          
           <input
             type="password"
+            label="Senha"
+            id="senha"
             placeholder="Senha"
             onChange={e =>
               this.setState({

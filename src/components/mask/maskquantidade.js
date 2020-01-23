@@ -4,7 +4,7 @@ import createNumberMask from "text-mask-addons/dist/createNumberMask";
 import PropTypes from 'prop-types';
 
 const TextMaskQuantidade = props => {
-  const { inputRef, className, label, onChange, value } = props;
+  const { className, label, onChange, value } = props;
 
   const numberMask = createNumberMask({
     prefix: "",
@@ -16,7 +16,6 @@ const TextMaskQuantidade = props => {
 
   return (
     <MaskedInput
-      ref={inputRef}
       className={className}
       label={label}
       mask={numberMask}

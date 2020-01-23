@@ -168,7 +168,7 @@ class Dashboard extends Component {
         }
       }
     );
-    console.log(response.data.ttRetorno);
+    
     
     let pedidossuspensos = response.data.ttRetorno.filter(pedido => {
       return pedido.cod_sit_str === "Suspenso";
@@ -406,7 +406,7 @@ class Dashboard extends Component {
         label: "Atendido",
          options: {
            customBodyRender: (value, tableMeta, updateValue) => { 
-             console.log(tableMeta.rowData[3]);
+             
              if (tableMeta.rowData[3] === "sim"){
               return (
                 <Chip
@@ -435,7 +435,7 @@ class Dashboard extends Component {
           sort: false,
           empty: true,
           customBodyRender: (value, tableMeta, updateValue) => {
-            console.log(value);
+            
             if (tableMeta.rowData[3] === "sim"){
 
             return (
