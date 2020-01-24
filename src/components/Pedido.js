@@ -1092,6 +1092,27 @@ class Pedido extends Component {
       desconto_item_f = "",
       tipo_forma_pagamento = 0,
       peso_calculado = 0;
+
+      let iten_inserido = this.state.produtoscarrinho.filter(it => {
+
+         return it.item === this.state.produto.label;
+
+       });
+
+      if (iten_inserido.length > 0) {
+        swal({
+          title: "Erro ao inserir item no pedido",
+          text: "Este item selecionado já foi incluido no pedido",
+          icon: "error",
+          closeOnClickOutside: false,
+          closeOnEsc: false
+          //timer: 4000,
+          //button: false
+        });
+      } else {
+
+
+      
     /*
     let valoratuallocalstorage = await this.lerValores("itenspedido");
     if(valoratuallocalstorage !== null){
@@ -1170,6 +1191,9 @@ class Pedido extends Component {
       peso_calculado =
         Number(this.state.quantidadeitem) * Number(this.state.peso_produto);
 
+     
+      
+
       let colecao = this.state.produtoscarrinho.concat([
         {
           tp_pedido: this.state.tipo_pedido_escolhido,
@@ -1199,20 +1223,7 @@ class Pedido extends Component {
 
       this.gravarValores("itenspedido", JSON.stringify(colecao));
       this.gravarValores("itenspedidoarray", colecao);
-
-      /*
-       let colecao = [
-         
-           {
-             item: this.state.produto.label,
-             quantidade: this.state.quantidadeitem,
-             tabela: this.state.produto.tabela,
-             campanha: this.state.descontocampanha,
-             descontoitem: this.state.descontoitem,
-             total: 0
-           }
-         
-       ];*/
+      
 
       this.setState({
         produtoscarrinho: colecao,
@@ -1232,11 +1243,13 @@ class Pedido extends Component {
         text: "Favor inserir a quantidade do item",
         icon: "error",
         closeOnClickOutside: false,
-        closeOnEsc: false
-        //timer: 4000,
-        //button: false
+        closeOnEsc: false        
       });
     }
+
+    }
+    
+
   };
 
   handleMeusPedidos = async () => {
@@ -1329,13 +1342,29 @@ class Pedido extends Component {
         );
         console.log('antes ');*/
         //console.log(antes);
-        const indiceexcluido = rowsDeleted.data[0].dataIndex + 1;
+        //const indiceexcluido = rowsDeleted.data[0].dataIndex + 1;
+        const indiceexcluido = rowsDeleted.data[0].dataIndex;
         console.log(indiceexcluido);
-        let depois = this.state.produtoscarrinho.splice(
+        console.log('REGISTRO');
+        console.log(rowsDeleted.data[0]);
+        /*let depois = this.state.produtoscarrinho.splice(
           this.state.produtoscarrinho.indexOf(indiceexcluido),
           1
-        );
+        );*/
+        let depois = this.state.produtoscarrinho.filter(p => {
+
+            return (
+              p.codigo !== this.state.produtoscarrinho[rowsDeleted.data[0].dataIndex].codigo
+            );
+        });
+        /*let depois = this.state.produtoscarrinho.splice(
+          indiceexcluido,
+          1
+        );*/
         this.gravarValores("itenspedido", JSON.stringify(depois));
+        this.setState({
+          produtoscarrinho: depois
+        });
 
         if (this.state.produtoscarrinho.length === 0) {
           this.setState({
@@ -1547,10 +1576,8 @@ class Pedido extends Component {
         </Typography>
         <TextField
           id="outlined-name"
-          //label="Desconto Campanha"
           className={classes.textField}
           value={this.state.descontocampanha}
-          //onChange={this.handleDescontoCampanha}
           margin="normal"
           variant="outlined"
           InputProps={{
