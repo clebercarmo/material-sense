@@ -155,7 +155,7 @@ function getModalStyle() {
 
 
 
-class Wizard extends Component {
+class Pedido extends Component {
   focusQuantidadeInput() {
     // Explicitly focus the text input using the raw DOM API
     // Note: we're accessing "current" to get the DOM node
@@ -660,13 +660,111 @@ class Wizard extends Component {
 
   _handleKeyDown = async e => {
     e.persist();
+
+    try {
+      if (e.key === "Enter" || e.key === "Escape") {
+        console.log(e.key);
+        console.log("value", e.target.value);
+        console.log("Produto Clicado dentro do enter");
+        console.log(
+          this.state.produto_clicado[5].props.control.props.value.replace(
+            ".",
+            ","
+          )
+        );
+
+        let lista_pedido = JSON.parse(await this.lerValores("itenspedido"));
+        let pedido = lista_pedido.filter(p => {
+          return p.item === this.state.produto_clicado[0];
+        });
+        console.log("Registro Encontrado");
+        console.log(pedido);
+
+        const j_retorno_item = await this.valorvendaitem(
+          pedido[0].cod_cliente,
+          pedido[0].tabela,
+          pedido[0].cond_pagamento,
+          pedido[0].codigo,
+          this.state.produto_clicado[5].props.control.props.value.replace(
+            ".",
+            ","
+          ),
+          this.state.produto_clicado[6].props.control.props.value.replace(
+            ".",
+            ","
+          ),
+          e.target.value
+        );
+        console.log("Retorno Recalculo");
+        console.log(j_retorno_item);
+        console.log("carrinho de compras");
+        console.log(this.state.produtoscarrinho);
+        //let pedido_busca = JSON.parse(this.state.produtoscarrinho);
+        const pedido_alterado = lista_pedido.map((value, index, array) => {
+          if (value.item === this.state.produto_clicado[0]) {
+            value.precoitem = j_retorno_item[0].prc_liquido;
+            value.prc_tabela = j_retorno_item[0].prc_tabela;
+            value.total = j_retorno_item[0].prc_compra_cx;
+            value.quantidade = j_retorno_item[0].quantidade;
+            value.peso = j_retorno_item[0].peso_bruto;
+          }
+          return value;
+        });
+        console.log("ITEM ALTERADO");
+        console.log(pedido_alterado);
+        this.gravarValores("itenspedido", JSON.stringify(pedido_alterado));
+
+        this.setState({
+          produtoscarrinho: pedido_alterado
+        });
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  isLetter = async c => {
+    return c.toLowerCase() !== c.toUpperCase();
+  };
+
+  _handleMouseLeave = async event => {
+
     
+    if (event.target.value === "") {
+      swal({
+        title: "Erro ao digitar desconto",
+        text: "Somente digitos são permitidos",
+        icon: "error",
+        closeOnClickOutside: false,
+        closeOnEsc: false
+      });
+    }
+   
+  
+  };
+
+  _handleKeyDownDescontoCampanha = async e => {
+    e.persist();
+    console.log(e.key);
+    if (e.key !== "Enter" && e.key !== "Escape" && e.key !== "Backspace") {
+      
+      if (await this.isLetter(e.key)) {
+        swal({
+          title: "Erro ao digitar desconto",
+          text: "Somente digitos são permitidos",
+          icon: "error",
+          closeOnClickOutside: false,
+          closeOnEsc: false
+        });
+      }
+    }
+
     if (e.key === "Enter" || e.key === "Escape") {
-
-
       console.log(e.key);
       console.log("value", e.target.value);
-      console.log('Produto Clicado dentro do enter');
+      let novo_desconto = null;
+      novo_desconto = e.target.value;
+      console.log("Produto Clicado dentro do enter");
       console.log(this.state.produto_clicado);
       let lista_pedido = JSON.parse(await this.lerValores("itenspedido"));
       let pedido = lista_pedido.filter(p => {
@@ -674,20 +772,22 @@ class Wizard extends Component {
       });
       console.log("Registro Encontrado");
       console.log(pedido);
-      
-     
+
       const j_retorno_item = await this.valorvendaitem(
         pedido[0].cod_cliente,
         pedido[0].tabela,
         pedido[0].cond_pagamento,
         pedido[0].codigo,
-        this.state.produto_clicado[5].replace(".", ","),
-        this.state.produto_clicado[6].replace(".", ","),
-        e.target.value
+        e.target.value.replace(".", ","),
+        this.state.produto_clicado[6].props.control.props.value.replace(
+          ".",
+          ","
+        ),
+        pedido[0].quantidade
       );
-      console.log('Retorno Recalculo');
+      console.log("Retorno Recalculo");
       console.log(j_retorno_item);
-      console.log('carrinho de compras');
+      console.log("carrinho de compras");
       console.log(this.state.produtoscarrinho);
       //let pedido_busca = JSON.parse(this.state.produtoscarrinho);
       const pedido_alterado = lista_pedido.map((value, index, array) => {
@@ -697,20 +797,85 @@ class Wizard extends Component {
           value.total = j_retorno_item[0].prc_compra_cx;
           value.quantidade = j_retorno_item[0].quantidade;
           value.peso = j_retorno_item[0].peso_bruto;
+          value.campanha = novo_desconto.replace(".", ",");
         }
         return value;
       });
-      console.log('ITEM ALTERADO');
+      console.log("ITEM ALTERADO");
       console.log(pedido_alterado);
       this.gravarValores("itenspedido", JSON.stringify(pedido_alterado));
 
       this.setState({
         produtoscarrinho: pedido_alterado
       });
-      
-
     }
-    
+  };
+
+  _handleKeyDownDescontoItem = async e => {
+    e.persist();
+    console.log(e.key);
+    if (e.key !== "Enter" && e.key !== "Escape" && e.key !== "Backspace") {
+      if (await this.isLetter(e.key)) {
+        swal({
+          title: "Erro ao digitar desconto",
+          text: "Somente digitos são permitidos",
+          icon: "error",
+          closeOnClickOutside: false,
+          closeOnEsc: false
+        });
+      }
+    }
+
+    if (e.key === "Enter" || e.key === "Escape") {
+      console.log(e.key);
+      console.log("value", e.target.value);
+      let novo_desconto = null;
+      novo_desconto = e.target.value;
+      console.log("Produto Clicado dentro do enter");
+      console.log(this.state.produto_clicado);
+      let lista_pedido = JSON.parse(await this.lerValores("itenspedido"));
+      let pedido = lista_pedido.filter(p => {
+        return p.item === this.state.produto_clicado[0];
+      });
+      console.log("Registro Encontrado");
+      console.log(pedido);
+
+      const j_retorno_item = await this.valorvendaitem(
+        pedido[0].cod_cliente,
+        pedido[0].tabela,
+        pedido[0].cond_pagamento,
+        pedido[0].codigo,
+        this.state.produto_clicado[5].props.control.props.value.replace(
+          ".",
+          ","
+        ),
+        e.target.value.replace(".", ","),
+        pedido[0].quantidade
+      );
+      console.log("Retorno Recalculo");
+      console.log(j_retorno_item);
+      console.log("carrinho de compras");
+      console.log(this.state.produtoscarrinho);
+      //let pedido_busca = JSON.parse(this.state.produtoscarrinho);
+      const pedido_alterado = lista_pedido.map((value, index, array) => {
+        if (value.item === this.state.produto_clicado[0]) {
+          value.precoitem = j_retorno_item[0].prc_liquido;
+          value.prc_tabela = j_retorno_item[0].prc_tabela;
+          value.total = j_retorno_item[0].prc_compra_cx;
+          value.quantidade = j_retorno_item[0].quantidade;
+          value.peso = j_retorno_item[0].peso_bruto;
+          value.descontoitem = novo_desconto.replace(".", ",");
+        }
+        return value;
+      });
+      console.log("ITEM ALTERADO");
+      console.log(pedido_alterado);
+      this.gravarValores("itenspedido", JSON.stringify(pedido_alterado));
+
+      this.setState({
+        produtoscarrinho: pedido_alterado
+      });
+    }
   };
 
   metodoenviarpedido = async pedidocompleto => {
@@ -1185,7 +1350,6 @@ class Wizard extends Component {
         //console.log(rowsDeleted, "were deleted!");
       },
       onRowClick: (rowData, rowState) => {
-        
         this.setState({
           produto_clicado: rowData
         });
@@ -1268,15 +1432,48 @@ class Wizard extends Component {
         name: "campanha",
         Label: "Desconto Campanha",
         options: {
-          filter: false
+          filter: false,
+          customBodyRender: (value, tableMeta, updateValue) => (
+            <FormControlLabel
+              control={
+                <TextField
+                  value={value || ""}
+                  type="text"
+                  className={classes.textField}
+                />
+              }
+              onKeyDown={this._handleKeyDownDescontoCampanha}
+              onMouseLeave={this._handleMouseLeave}
+              onChange={event => {
+                updateValue(event.target.value);
+              }}
+            />
+          )
         }
       },
+
       {
         name: "descontoitem",
         label: "Desconto Item",
         options: {
           filter: false,
-          sort: false
+          customBodyRender: (value, tableMeta, updateValue) => (
+            <FormControlLabel
+              control={
+                <TextField
+                  value={value || ""}
+                  type="text"
+                  className={classes.textField}
+                />
+              }
+              onKeyDown={this._handleKeyDownDescontoItem}
+              onMouseLeave={this._handleMouseLeave}
+              onChange={event => {
+                //this.AlterarItempedido(event)
+                updateValue(event.target.value);
+              }}
+            />
+          )
         }
       },
       {
@@ -1761,4 +1958,4 @@ class Wizard extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(Wizard));
+export default withRouter(withStyles(styles)(Pedido));

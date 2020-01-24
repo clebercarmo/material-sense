@@ -3,18 +3,23 @@ import withStyles from "@material-ui/styles/withStyles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Grid from "@material-ui/core/Grid";
 import MUIDataTable from "mui-datatables";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker
+} from "@material-ui/pickers";
 import Topbar from "./Topbar";
 import SectionHeader from "./typo/SectionHeader";
-import FaixaDatas from "./faixadata/FaixaDatas";
+import DateFnsUtils from "@date-io/date-fns";
+import ptLocale from "date-fns/locale/pt-BR";
 import Paper from "@material-ui/core/Paper";
 import Spinner from "../loading";
 import api from "../services/api";
-//import { parseISO, format, formatRelative, formatDistance } from "date-fns";
 import { format } from "date-fns";
-//import { zonedTimeToUtc } from "date-fns-tz";
 import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
 import DoneIcon from "@material-ui/icons/Done";
 import Chip from "@material-ui/core/Chip";
+import ButtonBarEnviar from "./buttons/ButtonBarEnviar";
+import swal from "sweetalert";
 
 const backgroundShape = require("../images/shape.svg");
 
@@ -101,10 +106,12 @@ const styles = theme => ({
   }
 });
 
-class Cards extends Component {
+class RelatorioVendas extends Component {
   state = {
     datainicio: null,
     datafim: null,
+    dtinicio: null,
+    dtfim: null,
     dadosusuariologado: null,
     loading: false,
     pedidos: []
@@ -112,12 +119,16 @@ class Cards extends Component {
 
   async componentDidMount() {
     let dadosusuario = await this.lerValores("USUARIO");
+    
     this.setState({
-      dadosusuariologado: JSON.parse(dadosusuario)
+      dadosusuariologado: JSON.parse(dadosusuario),
+      dtinicio: new Date(),
+      dtfim: new Date(),
+      datainicio: this.formatadata(new Date()),
+      datafim: this.formatadata(new Date())
     });
+   
   }
-
-  formatadata = data => format(data, "dd'/'MM'/'yy");
 
   calbackdatainicio = datainicio => {
     //console.log(datainicio);
@@ -146,26 +157,57 @@ class Cards extends Component {
     this.setState({
       loading: true
     });
+    const {datainicio, datafim} = this.state;
 
-    const response = await api.post(
-      "http://localhost:4000/microservices/controle-vendas",
-      {
-        codrepres: this.state.dadosusuariologado.codrepresentante,
-        dtinicio: this.state.datainicio,
-        dtfim: this.state.datafim
-      },
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
-    );
+    if(!datainicio || !datafim){
 
-    console.log(response.data.ttRetorno);
+       swal({
+         title: "Erro ao enviar solicitação",
+         text: "Favor inserir a faixa de datas",
+         icon: "error",
+         closeOnClickOutside: false,
+         closeOnEsc: false
+       });
+    } else{
+        const response = await api.post(
+          "http://localhost:4000/microservices/controle-vendas",
+          {
+            codrepres: this.state.dadosusuariologado.codrepresentante,
+            dtinicio: datainicio,
+            dtfim: datafim
+          },
+          {
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
+        );
 
+        console.log(response.data.ttRetorno);
+
+        this.setState({
+          loading: false,
+          pedidos: response.data.ttRetorno
+        });
+
+    }
+  };
+
+  formatadata = data => format(data, "dd'/'MM'/'yy");
+
+  handleDataInicio = e => {
+    let resultado = this.formatadata(e);
     this.setState({
-      loading: false,
-      pedidos: response.data.ttRetorno
+      datainicio: resultado,
+      dtinicio: e
+    });
+  };
+
+  handleDataFim = e => {
+    let resultado = this.formatadata(e);
+    this.setState({
+      datafim: resultado,
+      dtfim: e
     });
   };
 
@@ -356,27 +398,6 @@ class Cards extends Component {
       filterType: "dropdown",
       responsive: "stacked",
       rowsPerPage: 10,
-      /*onRowClick: (rowData, rowState) => {
-        console.log(rowData, rowState);
-      },*/
-      /*customRowRender: data => {
-          const [nrpedcli, cliente, cod_sit_str] = data;
-           return (
-             <tr key={nrpedcli}>
-               <td colSpan={4} >
-                 {nrpedcli}
-               </td>
-               <td colSpan={4}>
-                 {cliente}
-               </td>
-               <td colSpan={4} >
-                 {cod_sit_str}
-               </td>
-             </tr>
-           );
-
-       },*/
-
       textLabels: {
         pagination: {
           next: "Próximo",
@@ -421,11 +442,36 @@ class Cards extends Component {
                   className={classes.paper}
                   style={{ position: "relative" }}
                 >
-                  <FaixaDatas
-                    dtinicio={this.calbackdatainicio}
-                    dtfim={this.calbackdatafim}
-                    click={this.calbackenviarsolicitacao}
-                  />
+                  <MuiPickersUtilsProvider
+                    utils={DateFnsUtils}
+                    locale={ptLocale}
+                  >
+                    <Grid container justify="space-around" spacing={2}>
+                      <KeyboardDatePicker
+                        margin="normal"
+                        id="date-picker-dialog"
+                        format="dd/MM/yyyy"
+                        value={this.state.dtinicio}
+                        onChange={this.handleDataInicio}
+                        KeyboardButtonProps={{
+                          "aria-label": "change date"
+                        }}
+                      />
+                      <KeyboardDatePicker
+                        margin="normal"
+                        id="date-picker-dialog"
+                        format="dd/MM/yyyy"
+                        value={this.state.dtfim}
+                        onChange={this.handleDataFim}
+                        KeyboardButtonProps={{
+                          "aria-label": "change date"
+                        }}
+                      />
+                      <ButtonBarEnviar
+                        click={this.controlevendas}
+                      ></ButtonBarEnviar>
+                    </Grid>
+                  </MuiPickersUtilsProvider>
                 </Paper>
 
                 <Grid item xs={12}>
@@ -453,4 +499,4 @@ class Cards extends Component {
   }
 }
 
-export default withStyles(styles)(Cards);
+export default withStyles(styles)(RelatorioVendas);

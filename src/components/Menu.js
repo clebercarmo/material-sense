@@ -1,7 +1,7 @@
 const Menu = [
   {
     label: "Perfil",
-    pathname: "/vendadireta/signup"
+    pathname: "/vendadireta/perfil"
   },
   {
     label: "Dashboard",
@@ -9,11 +9,11 @@ const Menu = [
   },
   {
     label: "Novo Pedido",
-    pathname: "/vendadireta/wizard"
+    pathname: "/vendadireta/pedido"
   },
   {
     label: "Relatório de Vendas",
-    pathname: "/vendadireta/cards"
+    pathname: "/vendadireta/relatoriovendas"
   },
   {
     label: "Sair",

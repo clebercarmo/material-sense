@@ -2,12 +2,11 @@ import React from "react";
 import { Route, BrowserRouter, Switch, Redirect } from "react-router-dom";
 import { isAuthenticated } from "./services/auth";
 import Dashboard from "./components/Dashboard";
-import Wizard from "./components/Wizard";
-import Cards from "./components/Cards";
+import Pedido from "./components/Pedido";
+import RelatorioVendas from "./components/RelatorioVendas";
 import Main from "./components/Main";
-import Signup from "./components/Signup";
+import Perfil from "./components/Perfil";
 import SignIn from "./components/SignIn/SignIn";
-
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
@@ -35,9 +34,13 @@ export default props => (
       <PrivateRoute exact path="/vendadireta/main" component={Main} />
       <Route exact path="/vendadireta" component={SignIn} />
       <PrivateRoute exact path="/vendadireta/dashboard" component={Dashboard} />
-      <PrivateRoute exact path="/vendadireta/signup" component={Signup} />
-      <PrivateRoute exact path="/vendadireta/wizard" component={Wizard} />
-      <PrivateRoute exact path="/vendadireta/cards" component={Cards} />
+      <PrivateRoute exact path="/vendadireta/perfil" component={Perfil} />
+      <PrivateRoute exact path="/vendadireta/pedido" component={Pedido} />
+      <PrivateRoute
+        exact
+        path="/vendadireta/relatoriovendas"
+        component={RelatorioVendas}
+      />
     </Switch>
   </BrowserRouter>
 );

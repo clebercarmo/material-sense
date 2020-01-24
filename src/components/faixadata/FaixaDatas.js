@@ -12,15 +12,14 @@ import ButtonBarEnviar from "../buttons/ButtonBarEnviar";
 
 
 export default function FaixaDatas(props) {
-  //const { dtinicio, dtfim, click } = props;
+  const { dtinicioentrada, dtfimentrada } = props;
 
   // The first commit of Material-UI
   const [selectedDate, setSelectedDate] = React.useState(new Date());
 
   const handleDataInicio = date => {
-    props.dtinicio(date);
-
-    setSelectedDate(date);
+     return new Date(date);
+    
   };
 
   const handleDataFim = date => {
@@ -31,15 +30,13 @@ export default function FaixaDatas(props) {
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptLocale}>
-      < Grid container justify = "space-around" spacing={2}>
-     
-      
+      <Grid container justify="space-around" spacing={2}>
         <KeyboardDatePicker
           margin="normal"
           id="date-picker-dialog"
           label="Inicio"
           format="dd/MM/yyyy"
-          value={selectedDate}
+          value={dtinicioentrada}
           onChange={handleDataInicio}
           KeyboardButtonProps={{
             "aria-label": "change date"
@@ -50,7 +47,7 @@ export default function FaixaDatas(props) {
           id="date-picker-dialog"
           label="Fim"
           format="dd/MM/yyyy"
-          value={selectedDate}
+          value={dtfimentrada}
           onChange={handleDataFim}
           KeyboardButtonProps={{
             "aria-label": "change date"

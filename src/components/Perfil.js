@@ -108,7 +108,7 @@ const getSteps = () => {
   ];
 }
 
-class Signup extends Component {
+class Perfil extends Component {
 
   state = {
     activeStep: 0,
@@ -359,4 +359,4 @@ class Signup extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(Signup))
+export default withRouter(withStyles(styles)(Perfil))
