@@ -160,7 +160,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/pedido",
+      "https://inglezaonline.com.br/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -226,7 +226,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/detalhe-pedido",
+      "https://inglezaonline.com.br/microservices/detalhe-pedido",
       { pedido: pedido, nomeabrev: cliente },
       {
         headers: {
