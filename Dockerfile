@@ -1,20 +1,10 @@
-# stage: 1
-FROM node:latest as react-build
-
-# Create app directory
+FROM node:12.2.0-alpine as build
 WORKDIR /app
+COPY . /app
 
-COPY . ./
-
-RUN yarn install
-RUN yarn build
-
-# stage: 2 — the production environment
-FROM nginx:alpine
-COPY --from=react-build /app/build /usr/share/nginx/html
-
-# To provide a http authentication comment out the next two lines
-#COPY conf/default.conf /etc/nginx/conf.d/default.conf
-#COPY conf/authnginx/htpasswd /etc/nginx/authnginx/htpasswd
-EXPOSE 80 2222
+FROM nginx:1.16.0-alpine
+COPY --from=build /app/build /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/conf.d
+EXPOSE 9000
 CMD ["nginx", "-g", "daemon off;"]

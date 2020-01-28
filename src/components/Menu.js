@@ -1,8 +1,8 @@
 const Menu = [
-  {
+  /*{
     label: "Perfil",
     pathname: "/vendadireta/perfil"
-  },
+  },*/
   {
     label: "Dashboard",
     pathname: "/vendadireta/dashboard"

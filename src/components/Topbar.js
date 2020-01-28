@@ -115,20 +115,17 @@ class Topbar extends Component {
   }
 
   current = () => {
-    if (this.props.currentPath === '/vendadireta/home') {
-      return 0
-    }
     if(this.props.currentPath === '/vendadireta/dashboard') {
-      return 1
+      return 0
     }
     if (this.props.currentPath === '/vendadireta/perfil') {
       return 2
     }
     if (this.props.currentPath === '/vendadireta/pedido') {
-      return 3
+      return 1
     }
     if (this.props.currentPath === '/vendadireta/relatoriovendas') {
-      return 3
+      return 2
     }
 
   }

@@ -20,6 +20,8 @@ import DoneIcon from "@material-ui/icons/Done";
 import Chip from "@material-ui/core/Chip";
 import ButtonBarEnviar from "./buttons/ButtonBarEnviar";
 import swal from "sweetalert";
+import EspelhoPedido from "./dialogs/EspelhoPedido";
+
 
 const backgroundShape = require("../images/shape.svg");
 
@@ -114,21 +116,30 @@ class RelatorioVendas extends Component {
     dtfim: null,
     dadosusuariologado: null,
     loading: false,
-    pedidos: []
+    pedidos: [],
+    detalhepedido: []
   };
 
   async componentDidMount() {
     let dadosusuario = await this.lerValores("USUARIO");
-    
+
     this.setState({
       dadosusuariologado: JSON.parse(dadosusuario),
+      learnMoredialog: false,
       dtinicio: new Date(),
       dtfim: new Date(),
       datainicio: this.formatadata(new Date()),
       datafim: this.formatadata(new Date())
     });
-   
   }
+
+  openDialog = event => {
+    this.setState({ learnMoredialog: true });
+  };
+
+  dialogClose = event => {
+    this.setState({ learnMoredialog: false });
+  };
 
   calbackdatainicio = datainicio => {
     //console.log(datainicio);
@@ -153,43 +164,71 @@ class RelatorioVendas extends Component {
 
   lerValores = async valor => await localStorage.getItem(valor);
 
+  espelhopedido = async (...params) => {
+    console.log("parametros");
+    console.log(params[0]);
+    this.setState({
+      loading: true
+    });
+
+    const response = await api.post(
+      "http://localhost:4000/microservices/espelhopedido",
+      params[0],
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    console.log("REteorno");
+    console.log(response);
+    if (response.data.ttRetorno !== undefined) {
+      this.setState({
+        loading: false,
+        detalhepedido: response.data.ttRetorno
+      });
+    } else {
+      this.setState({
+        loading: false
+      });
+    }
+  };
+
   controlevendas = async () => {
     this.setState({
       loading: true
     });
-    const {datainicio, datafim} = this.state;
+    const { datainicio, datafim } = this.state;
 
-    if(!datainicio || !datafim){
-
-       swal({
-         title: "Erro ao enviar solicitação",
-         text: "Favor inserir a faixa de datas",
-         icon: "error",
-         closeOnClickOutside: false,
-         closeOnEsc: false
-       });
-    } else{
-        const response = await api.post(
-          "https://inglezaonline.com.br/microservices/controle-vendas",
-          {
-            codrepres: this.state.dadosusuariologado.codrepresentante,
-            dtinicio: datainicio,
-            dtfim: datafim
-          },
-          {
-            headers: {
-              "Content-Type": "application/json"
-            }
+    if (!datainicio || !datafim) {
+      swal({
+        title: "Erro ao enviar solicitação",
+        text: "Favor inserir a faixa de datas",
+        icon: "error",
+        closeOnClickOutside: false,
+        closeOnEsc: false
+      });
+    } else {
+      const response = await api.post(
+        "http://localhost:4000/microservices/controle-vendas",
+        {
+          codrepres: this.state.dadosusuariologado.codrepresentante,
+          dtinicio: datainicio,
+          dtfim: datafim
+        },
+        {
+          headers: {
+            "Content-Type": "application/json"
           }
-        );
+        }
+      );
 
-        console.log(response.data.ttRetorno);
+      console.log(response.data.ttRetorno);
 
-        this.setState({
-          loading: false,
-          pedidos: response.data.ttRetorno
-        });
-
+      this.setState({
+        loading: false,
+        pedidos: response.data.ttRetorno
+      });
     }
   };
 
@@ -238,7 +277,7 @@ class RelatorioVendas extends Component {
                 <Chip
                   label="Venda"
                   color="primary"
-                  style={{ backgroundColor: "#04D9C4" }}
+                  style={{ backgroundColor: "#F2C230" }}
                 />
               );
             }
@@ -248,7 +287,7 @@ class RelatorioVendas extends Component {
                 <Chip
                   label="Bonificação"
                   color="primary"
-                  style={{ backgroundColor: "#04D9C4" }}
+                  style={{ backgroundColor: "#F288C2" }}
                 />
               );
             }
@@ -258,7 +297,7 @@ class RelatorioVendas extends Component {
                 <Chip
                   label="Consumo"
                   color="primary"
-                  style={{ backgroundColor: "#04D9C4" }}
+                  style={{ backgroundColor: "#0D0259" }}
                 />
               );
             }
@@ -268,7 +307,7 @@ class RelatorioVendas extends Component {
                 <Chip
                   label="Industria"
                   color="primary"
-                  style={{ backgroundColor: "#04D9C4" }}
+                  style={{ backgroundColor: "#0D0259" }}
                 />
               );
             }
@@ -358,7 +397,7 @@ class RelatorioVendas extends Component {
               <Chip
                 label={tableMeta.rowData[12]}
                 color="primary"
-                style={{ backgroundColor: "#04D9C4" }}
+                style={{ backgroundColor: "#D90404" }}
               />
             );
           }
@@ -377,9 +416,17 @@ class RelatorioVendas extends Component {
                 //label="Itens"
                 clickable
                 color="primary"
-                style={{ backgroundColor: "#04D9C4" }}
+                style={{ backgroundColor: "#038C8C" }}
                 onClick={() => {
-                  alert("Clicado");
+                  this.espelhopedido({
+                    nrpedcli: tableMeta.rowData[0],
+                    nomeabrev: tableMeta.rowData[5]
+                  });
+                  this.dialogClose();
+                  this.openDialog();
+                  this.setState({
+                    detalhepedido: []
+                  });
                 }}
                 deleteIcon={<DoneIcon />}
               />
@@ -388,6 +435,9 @@ class RelatorioVendas extends Component {
         }
       }
     ];
+
+    const columnsdetalhepedido = {};
+    const opcoesdetalhe = {};
 
     const options = {
       filter: true,
@@ -449,7 +499,7 @@ class RelatorioVendas extends Component {
                     <Grid container justify="space-around" spacing={2}>
                       <KeyboardDatePicker
                         margin="normal"
-                        id="date-picker-dialog"
+                        id="data-inicio"
                         format="dd/MM/yyyy"
                         value={this.state.dtinicio}
                         onChange={this.handleDataInicio}
@@ -459,7 +509,7 @@ class RelatorioVendas extends Component {
                       />
                       <KeyboardDatePicker
                         margin="normal"
-                        id="date-picker-dialog"
+                        id="data-fim"
                         format="dd/MM/yyyy"
                         value={this.state.dtfim}
                         onChange={this.handleDataFim}
@@ -492,6 +542,14 @@ class RelatorioVendas extends Component {
                 </Grid>
               </Grid>
             </Grid>
+            <EspelhoPedido
+              open={this.state.learnMoredialog}
+              onClose={this.dialogClose}
+              dados={this.state.detalhepedido}
+              colunas={columnsdetalhepedido}
+              opcoes={opcoesdetalhe}
+              classes={this.classes}
+            />
           </Grid>
         </div>
       </React.Fragment>

@@ -160,7 +160,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -226,7 +226,7 @@ class Dashboard extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/detalhe-pedido",
+      "http://localhost:4000/microservices/detalhe-pedido",
       { pedido: pedido, nomeabrev: cliente },
       {
         headers: {
@@ -583,7 +583,11 @@ class Dashboard extends Component {
                   </div>
                   <div>
                     <Button
-                      to={{ pathname: "/vendadireta/cards", search: `?type=apply` }}
+                      to = {
+                        {
+                          pathname: "/vendadireta/relatoriovendas"
+                        }
+                      }
                       variant="outlined"
                       component={Link}
                       className={classes.outlinedButtom}
@@ -725,7 +729,11 @@ class Dashboard extends Component {
                           Cancelar
                         </Button>
                         <Button
-                          to={{ pathname: "/vendadireta/cards", search: `?type=apply` }}
+                          to = {
+                            {
+                              pathname: "/vendadireta/relatoriovendas"
+                            }
+                          }
                           component={Link}
                           color="primary"
                           variant="contained"

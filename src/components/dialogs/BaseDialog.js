@@ -7,7 +7,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 const styles = theme => ({
   container: {
-    maxWidth: 600,
     flexGrow: 1,
     textAlign: 'center',
     display: 'flex',
@@ -31,18 +30,18 @@ class BaseDialog extends Component {
         onClose={onClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
-        scroll='body'
+        fullWidth={true}
+        scroll="body"
+        maxWidth='xl'
       >
         <DialogTitle id="alert-dialog-title"></DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            <div className={classes.container}>
-              {this.props.children}
-            </div>
+            <div className={classes.container}>{this.props.children}</div>
           </DialogContentText>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 }
 
