@@ -143,7 +143,6 @@ const styles = theme => ({
 
 function getModalStyle() {
   const top = 25;
-  
 
   return {
     top: `${top}%`,
@@ -152,8 +151,6 @@ function getModalStyle() {
     // transform: `translate(-${top}%, -${left}%)`,
   };
 }
-
-
 
 class Pedido extends Component {
   focusQuantidadeInput() {
@@ -169,6 +166,7 @@ class Pedido extends Component {
     this.focusQuantidadeInput = this.focusQuantidadeInput.bind(this);
 
     this.state = {
+      pedidomongo: [],
       produto_clicado: null,
       data_entrega_formatado: "",
       data_entrega: null,
@@ -254,9 +252,14 @@ class Pedido extends Component {
     this.setState({
       dadosusuariologado: JSON.parse(dadosusuario)
     });
+    const query = {
+      usuario: JSON.parse(dadosusuario).nomerepresentante
+    };
+    const pedidomongo = await this.consultapedidoandamento(query);
 
     this.setState({
-      loading: false
+      loading: false,
+      pedidomongo: pedidomongo.data.pedido
     });
     let itenssalvos = await this.lerValores("itenspedido");
     if (itenssalvos !== null) {
@@ -279,7 +282,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -305,7 +308,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/itemvenda",
+      "http://localhost:4000/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -326,7 +329,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/formapagamento",
+      "http://localhost:4000/microservices/formapagamento",
       {
         cod_representante: cliente
       },
@@ -357,7 +360,7 @@ class Pedido extends Component {
 
     try {
       const response = await api.post(
-        "https://inglezaonline.com.br/microservices/detalheitem",
+        "http://localhost:4000/microservices/detalheitem",
         {
           codcliente: codcliente,
           tabpreco: tabpreco,
@@ -402,7 +405,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/meusclientes",
+      "http://localhost:4000/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -440,7 +443,7 @@ class Pedido extends Component {
       });
       await this.cargaformapagamento(e.value);
       await this.cargaitens(e.tabeladepreco);
-
+      
       this.setState({
         loading: false,
         cod_cliente: e.value,
@@ -645,11 +648,14 @@ class Pedido extends Component {
   };
 
   handleRecuperarPedido = async () => {
+    /* METODO ANTIGO
     let produtoscarrinholocalstorage = await this.lerValores("itenspedido");
     produtoscarrinholocalstorage = JSON.parse(produtoscarrinholocalstorage);
+    */
+    const { pedidomongo } = this.state;
     await this.cargaclientes();
     this.setState({
-      produtoscarrinho: produtoscarrinholocalstorage
+      produtoscarrinho: pedidomongo.pedido
     });
   };
 
@@ -728,8 +734,6 @@ class Pedido extends Component {
   };
 
   _handleMouseLeave = async event => {
-
-    
     if (event.target.value === "") {
       swal({
         title: "Erro ao digitar desconto",
@@ -739,15 +743,12 @@ class Pedido extends Component {
         closeOnEsc: false
       });
     }
-   
-  
   };
 
   _handleKeyDownDescontoCampanha = async e => {
     e.persist();
     console.log(e.key);
     if (e.key !== "Enter" && e.key !== "Escape" && e.key !== "Backspace") {
-      
       if (await this.isLetter(e.key)) {
         swal({
           title: "Erro ao digitar desconto",
@@ -891,7 +892,7 @@ class Pedido extends Component {
     });
 
     await axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -979,13 +980,37 @@ class Pedido extends Component {
     //await this.ultimospedidos();
   };
 
+  pedidoandamento = async (...params) => {
+    await api.post(
+      "http://localhost:4000/microservices/salvarpedido",
+      params[0],
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+  };
+
+  consultapedidoandamento = async (...params) => {
+    return await api.post(
+      "http://localhost:4000/microservices/consultapedidoativo",
+      params[0],
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+  };
+
   ultimospedidos = async () => {
     this.setState({
       loading: true
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -1024,7 +1049,7 @@ class Pedido extends Component {
 
     /*
     axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -1043,7 +1068,7 @@ class Pedido extends Component {
 
     /* 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/incluirpedido",
+      "http://localhost:4000/microservices/incluirpedido",
       {
         pedidocompleto
       },
@@ -1093,27 +1118,22 @@ class Pedido extends Component {
       tipo_forma_pagamento = 0,
       peso_calculado = 0;
 
-      let iten_inserido = this.state.produtoscarrinho.filter(it => {
+    let iten_inserido = this.state.produtoscarrinho.filter(it => {
+      return it.item === this.state.produto.label;
+    });
 
-         return it.item === this.state.produto.label;
-
-       });
-
-      if (iten_inserido.length > 0) {
-        swal({
-          title: "Erro ao inserir item no pedido",
-          text: "Este item selecionado já foi incluido no pedido",
-          icon: "error",
-          closeOnClickOutside: false,
-          closeOnEsc: false
-          //timer: 4000,
-          //button: false
-        });
-      } else {
-
-
-      
-    /*
+    if (iten_inserido.length > 0) {
+      swal({
+        title: "Erro ao inserir item no pedido",
+        text: "Este item selecionado já foi incluido no pedido",
+        icon: "error",
+        closeOnClickOutside: false,
+        closeOnEsc: false
+        //timer: 4000,
+        //button: false
+      });
+    } else {
+      /*
     let valoratuallocalstorage = await this.lerValores("itenspedido");
     if(valoratuallocalstorage !== null){
         valoratuallocalstorage.concat({
@@ -1137,129 +1157,135 @@ class Pedido extends Component {
 
     }*/
 
-    //produtoslocalstorge;
+      //produtoslocalstorge;
 
-    if (
-      this.state.produto !== null &&
-      this.state.quantidadeitem !== null
-      //this.state.descontocampanha !== null &&
-      //this.state.descontoitem !== null
-    ) {
-      if (this.state.descontocampanha !== null) {
-        desconto_campanha_f = this.state.descontocampanha.replace(".", ",");
+      if (
+        this.state.produto !== null &&
+        this.state.quantidadeitem !== null
+        //this.state.descontocampanha !== null &&
+        //this.state.descontoitem !== null
+      ) {
+        if (this.state.descontocampanha !== null) {
+          desconto_campanha_f = this.state.descontocampanha.replace(".", ",");
 
-        this.setState({
-          descontocampanha: desconto_campanha_f
-        });
-      } else {
-        this.setState({
-          descontocampanha: "0"
-        });
-      }
+          this.setState({
+            descontocampanha: desconto_campanha_f
+          });
+        } else {
+          this.setState({
+            descontocampanha: "0"
+          });
+        }
 
-      if (this.state.descontoitem !== null) {
-        desconto_item_f = this.state.descontoitem.replace(".", ",");
-        console.log(desconto_item_f);
+        if (this.state.descontoitem !== null) {
+          desconto_item_f = this.state.descontoitem.replace(".", ",");
+          console.log(desconto_item_f);
 
-        this.setState({
-          descontoitem: desconto_item_f
-        });
-      } else {
-        this.setState({
-          descontoitem: "0"
-        });
-      }
+          this.setState({
+            descontoitem: desconto_item_f
+          });
+        } else {
+          this.setState({
+            descontoitem: "0"
+          });
+        }
 
-      //buscar os dados do item
-      const j_retorno_item = await this.valorvendaitem(
-        this.state.cod_cliente,
-        this.state.tabelaprecocliente,
-        this.state.forma_pagamento_escolhida,
-        this.state.produto.value,
-        this.state.descontoitem.replace(".", ","),
-        this.state.descontocampanha.replace(".", ","),
-        this.state.quantidadeitem
-      );
+        //buscar os dados do item
+        const j_retorno_item = await this.valorvendaitem(
+          this.state.cod_cliente,
+          this.state.tabelaprecocliente,
+          this.state.forma_pagamento_escolhida,
+          this.state.produto.value,
+          this.state.descontoitem.replace(".", ","),
+          this.state.descontocampanha.replace(".", ","),
+          this.state.quantidadeitem
+        );
 
-      console.log(j_retorno_item);
+        console.log(j_retorno_item);
 
-      if (!this.state.isBonificacao) {
-        tipo_forma_pagamento = this.state.forma_pagamento_escolhida;
-      }
-      console.log("PRODUTO");
-      console.log(this.state.produto);
-      peso_calculado =
-        Number(this.state.quantidadeitem) * Number(this.state.peso_produto);
+        if (!this.state.isBonificacao) {
+          tipo_forma_pagamento = this.state.forma_pagamento_escolhida;
+        }
+        console.log("PRODUTO");
+        console.log(this.state.produto);
+        peso_calculado =
+          Number(this.state.quantidadeitem) * Number(this.state.peso_produto);
 
-      let qt_ajustada = 0;
-      try{
-      
-          if (this.state.quantidadeitem === '' || this.state.quantidadeitem === 0 || !this.state.quantidadeitem) {
+        let qt_ajustada = 0;
+        try {
+          if (
+            this.state.quantidadeitem === "" ||
+            this.state.quantidadeitem === 0 ||
+            !this.state.quantidadeitem
+          ) {
             qt_ajustada = 1;
-          }else{
+          } else {
             qt_ajustada = this.state.quantidadeitem;
           }
-        }catch(err){
+        } catch (err) {
           qt_ajustada = 1;
         }
-      
 
-      let colecao = this.state.produtoscarrinho.concat([
-        {
-          tp_pedido: this.state.tipo_pedido_escolhido,
-          cod_cliente: this.state.cod_cliente,
-          cond_pagamento: tipo_forma_pagamento,
-          ordem_compra: this.state.ordemcompra,
-          dt_entrega: this.state.data_entrega_formatado,
-          tabela: this.state.tabelaprecocliente,
-          precoitem: j_retorno_item[0].prc_liquido,
-          prc_tabela: j_retorno_item[0].prc_tabela,
-          per_desc_canal: j_retorno_item[0].per_desc_canal,
-          pedido_origem: this.state.pedidoorigeminformado,
-          data_atendimento: "",
-          observacoes: "",
-          frete: this.state.cod_frete,
-          dt_atendimento: "",
-          observacao_logistica: this.state.observacaopedido,
-          codigo: this.state.produto.value,
-          item: this.state.produto.label,
-          quantidade: qt_ajustada,
-          peso: peso_calculado,
-          campanha: this.state.descontocampanha.replace(".", ","),
-          descontoitem: this.state.descontoitem.replace(".", ","),
-          total: j_retorno_item[0].prc_compra_cx
-        }
-      ]);
+        let colecao = this.state.produtoscarrinho.concat([
+          {
+            tp_pedido: this.state.tipo_pedido_escolhido,
+            cod_cliente: this.state.cod_cliente,
+            cond_pagamento: tipo_forma_pagamento,
+            ordem_compra: this.state.ordemcompra,
+            dt_entrega: this.state.data_entrega_formatado,
+            tabela: this.state.tabelaprecocliente,
+            precoitem: j_retorno_item[0].prc_liquido,
+            prc_tabela: j_retorno_item[0].prc_tabela,
+            per_desc_canal: j_retorno_item[0].per_desc_canal,
+            pedido_origem: this.state.pedidoorigeminformado,
+            data_atendimento: "",
+            observacoes: "",
+            frete: this.state.cod_frete,
+            dt_atendimento: "",
+            observacao_logistica: this.state.observacaopedido,
+            codigo: this.state.produto.value,
+            item: this.state.produto.label,
+            quantidade: qt_ajustada,
+            peso: peso_calculado,
+            campanha: this.state.descontocampanha.replace(".", ","),
+            descontoitem: this.state.descontoitem.replace(".", ","),
+            total: j_retorno_item[0].prc_compra_cx
+          }
+        ]);
 
-      this.gravarValores("itenspedido", JSON.stringify(colecao));
-      this.gravarValores("itenspedidoarray", colecao);
-      
+        let pedido_andamento = JSON.stringify({
+          usuario: this.state.dadosusuariologado.nomerepresentante,
+          pedido: colecao
+        });
 
-      this.setState({
-        produtoscarrinho: colecao,
-        peso_total: this.state.peso_total + peso_calculado,
-        valor_bruto_total:
-          Number(j_retorno_item[0].prc_compra_cx) +
-          Number(this.state.valor_bruto_total),
-        total_volumes:
-          Number(this.state.total_volumes) + Number(this.state.quantidadeitem),
-        temproduto: true
-      });
+        await this.pedidoandamento(pedido_andamento);
+        this.gravarValores("pedidoandamento", pedido_andamento);
+        this.gravarValores("itenspedido", JSON.stringify(colecao));
+        this.gravarValores("itenspedidoarray", colecao);
 
-      this.limpacampos();
-    } else {
-      swal({
-        title: "Erro ao inserir um item no pedido",
-        text: "Favor inserir a quantidade do item",
-        icon: "error",
-        closeOnClickOutside: false,
-        closeOnEsc: false        
-      });
+        this.setState({
+          produtoscarrinho: colecao,
+          peso_total: this.state.peso_total + peso_calculado,
+          valor_bruto_total:
+            Number(j_retorno_item[0].prc_compra_cx) +
+            Number(this.state.valor_bruto_total),
+          total_volumes:
+            Number(this.state.total_volumes) +
+            Number(this.state.quantidadeitem),
+          temproduto: true
+        });
+
+        this.limpacampos();
+      } else {
+        swal({
+          title: "Erro ao inserir um item no pedido",
+          text: "Favor inserir a quantidade do item",
+          icon: "error",
+          closeOnClickOutside: false,
+          closeOnEsc: false
+        });
+      }
     }
-
-    }
-    
-
   };
 
   handleMeusPedidos = async () => {
@@ -1355,17 +1381,17 @@ class Pedido extends Component {
         //const indiceexcluido = rowsDeleted.data[0].dataIndex + 1;
         const indiceexcluido = rowsDeleted.data[0].dataIndex;
         console.log(indiceexcluido);
-        console.log('REGISTRO');
+        console.log("REGISTRO");
         console.log(rowsDeleted.data[0]);
         /*let depois = this.state.produtoscarrinho.splice(
           this.state.produtoscarrinho.indexOf(indiceexcluido),
           1
         );*/
         let depois = this.state.produtoscarrinho.filter(p => {
-
-            return (
-              p.codigo !== this.state.produtoscarrinho[rowsDeleted.data[0].dataIndex].codigo
-            );
+          return (
+            p.codigo !==
+            this.state.produtoscarrinho[rowsDeleted.data[0].dataIndex].codigo
+          );
         });
         /*let depois = this.state.produtoscarrinho.splice(
           indiceexcluido,
@@ -1554,7 +1580,7 @@ class Pedido extends Component {
             margin: 10
           }}
         >
-          Desconto Item
+          Desconto Item %
         </Typography>
         <TextField
           id="outlined-name"
@@ -1571,6 +1597,7 @@ class Pedido extends Component {
             onChange: this.handleDescontoItem
           }}
         />
+       
       </React.Fragment>
     );
 
@@ -1582,7 +1609,7 @@ class Pedido extends Component {
             margin: 10
           }}
         >
-          Desconto Campanha
+          Desconto Campanha %
         </Typography>
         <TextField
           id="outlined-name"
@@ -1608,7 +1635,7 @@ class Pedido extends Component {
             margin: 10
           }}
         >
-          Quantidade
+          Quantidade UN
         </Typography>
         <TextField
           id="standard-number"
