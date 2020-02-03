@@ -170,6 +170,8 @@ class Pedido extends Component {
       produto_clicado: null,
       data_entrega_formatado: "",
       data_entrega: null,
+      data_atendimento_formatado: "",
+      data_atendimento: null,
       cod_cliente: "",
       peso_total: 0,
       valor_bruto_total: null,
@@ -273,6 +275,7 @@ class Pedido extends Component {
     }
 
     this.state.data_entrega = new Date();
+    this.state.data_atendimento = new Date();
     this.ultimospedidos();
   }
 
@@ -282,7 +285,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/pedido",
+      "https://inglezaonline.com.br/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -308,7 +311,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/itemvenda",
+      "https://inglezaonline.com.br/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -329,7 +332,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/formapagamento",
+      "https://inglezaonline.com.br/microservices/formapagamento",
       {
         cod_representante: cliente
       },
@@ -360,7 +363,7 @@ class Pedido extends Component {
 
     try {
       const response = await api.post(
-        "http://localhost:4000/microservices/detalheitem",
+        "https://inglezaonline.com.br/microservices/detalheitem",
         {
           codcliente: codcliente,
           tabpreco: tabpreco,
@@ -405,7 +408,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/meusclientes",
+      "https://inglezaonline.com.br/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -547,6 +550,16 @@ class Pedido extends Component {
     this.setState({
       data_entrega: e,
       data_entrega_formatado: resultado
+    });
+  };
+
+   handleDataAtendimento = e => {
+    let resultado = this.formatadata(e);
+    console.log(resultado);
+
+    this.setState({
+      data_atendimento: e,
+      data_atendimento_formatado: resultado
     });
   };
 
@@ -892,7 +905,7 @@ class Pedido extends Component {
     });
 
     await axios({
-      url: "http://localhost:4000/microservices/incluirpedido",
+      url: "https://inglezaonline.com.br/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -982,7 +995,7 @@ class Pedido extends Component {
 
   pedidoandamento = async (...params) => {
     await api.post(
-      "http://localhost:4000/microservices/salvarpedido",
+      "https://inglezaonline.com.br/microservices/salvarpedido",
       params[0],
       {
         headers: {
@@ -994,7 +1007,7 @@ class Pedido extends Component {
 
   consultapedidoandamento = async (...params) => {
     return await api.post(
-      "http://localhost:4000/microservices/consultapedidoativo",
+      "https://inglezaonline.com.br/microservices/consultapedidoativo",
       params[0],
       {
         headers: {
@@ -1010,7 +1023,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "http://localhost:4000/microservices/pedido",
+      "https://inglezaonline.com.br/microservices/pedido",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -1049,7 +1062,7 @@ class Pedido extends Component {
 
     /*
     axios({
-      url: "http://localhost:4000/microservices/incluirpedido",
+      url: "https://inglezaonline.com.br/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -1068,7 +1081,7 @@ class Pedido extends Component {
 
     /* 
     const response = await api.post(
-      "http://localhost:4000/microservices/incluirpedido",
+      "https://inglezaonline.com.br/microservices/incluirpedido",
       {
         pedidocompleto
       },
@@ -1241,7 +1254,7 @@ class Pedido extends Component {
             data_atendimento: "",
             observacoes: "",
             frete: this.state.cod_frete,
-            dt_atendimento: "",
+            dt_atendimento: this.state.data_atendimento_formatado,
             observacao_logistica: this.state.observacaopedido,
             codigo: this.state.produto.value,
             item: this.state.produto.label,
@@ -1758,6 +1771,9 @@ class Pedido extends Component {
                     //value={values.valor}
                     margin="normal"
                     variant="outlined"
+                    inputProps={{
+                      maxLength: 12,
+                    }}
                     autoFocus
                   />
 
@@ -1821,7 +1837,7 @@ class Pedido extends Component {
                   <Divider />
                   {this.state.isescolheucliente && (
                     <Typography variant="h6" gutterBottom>
-                      Data Entrega
+                      Data Limite de Atendimento
                     </Typography>
                   )}
                   {this.state.isescolheucliente && (
@@ -1833,8 +1849,8 @@ class Pedido extends Component {
                         margin="normal"
                         id="date-picker-dialog"
                         format="dd/MM/yyyy"
-                        value={this.state.data_entrega}
-                        onChange={this.handleDataEntrega}
+                        value={this.state.data_atendimento}
+                        onChange={this.handleDataAtendimento}
                         KeyboardButtonProps={{
                           "aria-label": "change date"
                         }}
@@ -1945,6 +1961,12 @@ class Pedido extends Component {
                       >
                         Adicionar
                       </Button>
+                      <Divider />
+                      <Typography variant="h6" gutterBottom>
+                        <Box color="primary.main">
+                          Pressione Enter para recalcular os valores do pedido.
+                        </Box>
+                      </Typography>
                     </Paper>
 
                     <Paper

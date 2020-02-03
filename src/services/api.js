@@ -3,7 +3,7 @@ import { getToken } from "./auth";
 
 const api = axios.create({
   baseURL:
-    "http://localhost:4000/cgi-bin/ws.do/WService=reservas/action/data"
+    "https://inglezaonline.com.br/cgi-bin/ws.do/WService=reservas/action/data"
 });
 
 api.interceptors.request.use(async config => {
