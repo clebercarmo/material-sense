@@ -172,7 +172,7 @@ class RelatorioVendas extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/espelhopedido",
+      "http://localhost:4000/microservices/espelhopedido",
       params[0],
       {
         headers: {
@@ -210,7 +210,7 @@ class RelatorioVendas extends Component {
       });
     } else {
       const response = await api.post(
-        "https://inglezaonline.com.br/microservices/controle-vendas",
+        "http://localhost:4000/microservices/controle-vendas",
         {
           codrepres: this.state.dadosusuariologado.codrepresentante,
           dtinicio: datainicio,

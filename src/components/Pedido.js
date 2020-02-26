@@ -285,7 +285,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       { cod_representante: this.state.dadosusuariologado.codrepresentante },
       {
         headers: {
@@ -311,7 +311,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/itemvenda",
+      "http://localhost:4000/microservices/itemvenda",
       {
         tabpreco: cliente
       },
@@ -332,7 +332,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/formapagamento",
+      "http://localhost:4000/microservices/formapagamento",
       {
         cod_representante: cliente
       },
@@ -363,7 +363,7 @@ class Pedido extends Component {
 
     try {
       const response = await api.post(
-        "https://inglezaonline.com.br/microservices/detalheitem",
+        "http://localhost:4000/microservices/detalheitem",
         {
           codcliente: codcliente,
           tabpreco: tabpreco,
@@ -408,7 +408,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/meusclientes",
+      "http://localhost:4000/microservices/meusclientes",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -905,7 +905,7 @@ class Pedido extends Component {
     });
 
     await axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -995,7 +995,7 @@ class Pedido extends Component {
 
   pedidoandamento = async (...params) => {
     await api.post(
-      "https://inglezaonline.com.br/microservices/salvarpedido",
+      "http://localhost:4000/microservices/salvarpedido",
       params[0],
       {
         headers: {
@@ -1007,7 +1007,7 @@ class Pedido extends Component {
 
   consultapedidoandamento = async (...params) => {
     return await api.post(
-      "https://inglezaonline.com.br/microservices/consultapedidoativo",
+      "http://localhost:4000/microservices/consultapedidoativo",
       params[0],
       {
         headers: {
@@ -1023,7 +1023,7 @@ class Pedido extends Component {
     });
 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/pedido",
+      "http://localhost:4000/microservices/pedido",
       {
         cod_representante: this.state.dadosusuariologado.codrepresentante
       },
@@ -1062,7 +1062,7 @@ class Pedido extends Component {
 
     /*
     axios({
-      url: "https://inglezaonline.com.br/microservices/incluirpedido",
+      url: "http://localhost:4000/microservices/incluirpedido",
       method: "post",
       data: pedidocompleto
     })
@@ -1081,7 +1081,7 @@ class Pedido extends Component {
 
     /* 
     const response = await api.post(
-      "https://inglezaonline.com.br/microservices/incluirpedido",
+      "http://localhost:4000/microservices/incluirpedido",
       {
         pedidocompleto
       },
