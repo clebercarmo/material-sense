@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Form, Container } from "./styles";
-import Logo from "../../images/logouau.svg";
+import Logo from "../../images/UAU-Ingleza.png";
 import api from "../../services/api";
 import { login } from "../../services/auth";
 import Spinner from "../../loading";
@@ -74,7 +74,7 @@ class SignIn extends Component {
   render() {
     return (
       <Container>
-        <Spinner isFetching={this.state.loading} color="#5A6AAA" />
+        <Spinner isFetching={this.state.loading} color="#293577" />
         <Form onSubmit={this.handleSignIn}>
           <img src={Logo} alt="App Ingleza" />
           

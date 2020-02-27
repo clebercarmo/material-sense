@@ -5,7 +5,7 @@ export const Container = styled.div `
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #064F73;
+  background: #FFFFF;
 `;
 
 export const Imagem = styled.img `
@@ -15,19 +15,19 @@ export const Imagem = styled.img `
 
 export const Form = styled.form `
   width: 400px;
-  background: #064F73;
+  background: #FFFFF;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   img {
-    width: 300px;
-    margin: 10px 0 15px;
+    width: 150px;
+    margin: 10px 20px 30px 20px;
   }
   p {
-    color: #ffff;
+    color: #000313;
     margin-bottom: 15px;
-    border: 1px solid #ffff;
+    border: 1px solid #000313;
     padding: 10px;
     width: 90%;
     text-align: center;
@@ -37,7 +37,7 @@ export const Form = styled.form `
     height: 46px;
     margin-bottom: 15px;
     padding: 15px 12px;
-    font-size: 16px;
+    font-size: 18px;
     width: 90%;
     border: 1px solid #ddd;
     &::placeholder {
@@ -46,7 +46,7 @@ export const Form = styled.form `
   }
   button {
     font-size: 20px;
-    background: #046952;
+    background: #293577;
     color: #ffff;
     height: 56px;
     border: 0;

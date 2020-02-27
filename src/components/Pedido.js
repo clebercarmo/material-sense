@@ -28,6 +28,14 @@ import ShoppingCartIcon from "@material-ui/icons/ShoppingCart";
 import Badge from "@material-ui/core/Badge";
 import IconButton from "@material-ui/core/IconButton";
 import HowToVoteIcon from "@material-ui/icons/HowToVote";
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Avatar from '@material-ui/core/Avatar';
+import ImageIcon from '@material-ui/icons/Image';
+import WorkIcon from '@material-ui/icons/Work';
+import BeachAccessIcon from '@material-ui/icons/BeachAccess';
 import DateFnsUtils from "@date-io/date-fns";
 import ptLocale from "date-fns/locale/pt-BR";
 import "date-fns";
@@ -50,6 +58,11 @@ const styles = theme => ({
     backgroundSize: "cover",
     backgroundPosition: "0 400px",
     paddingBottom: 200
+  },
+  list: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: "#03A696",
   },
   grid: {
     width: 1800,
@@ -174,7 +187,7 @@ class Pedido extends Component {
       data_atendimento: null,
       cod_cliente: "",
       peso_total: 0,
-      valor_bruto_total: null,
+      valor_bruto_total: 0.00,
       total_volumes: 0,
       peso_produto: 0,
       forma_pagamento_default: null,
@@ -242,6 +255,7 @@ class Pedido extends Component {
       pedidoclientefinalizado: null,
       forma_pagamento_escolhida: null,
       pedidoorigeminformado: "",
+      investimento: 0.00,
       pedidos: []
     };
 
@@ -446,7 +460,7 @@ class Pedido extends Component {
       });
       await this.cargaformapagamento(e.value);
       await this.cargaitens(e.tabeladepreco);
-      
+
       this.setState({
         loading: false,
         cod_cliente: e.value,
@@ -553,7 +567,7 @@ class Pedido extends Component {
     });
   };
 
-   handleDataAtendimento = e => {
+  handleDataAtendimento = e => {
     let resultado = this.formatadata(e);
     console.log(resultado);
 
@@ -596,6 +610,11 @@ class Pedido extends Component {
     this.setState({
       observacaopedido: e.target.value
     });
+  };
+
+
+  handleInvestimento = e => {
+
   };
 
   handleDescontoCampanha = e => {
@@ -909,7 +928,7 @@ class Pedido extends Component {
       method: "post",
       data: pedidocompleto
     })
-      .then(function(response) {
+      .then(function (response) {
         // your action after success
 
         mensagemsucessoantes =
@@ -977,7 +996,7 @@ class Pedido extends Component {
           });
         } */
       })
-      .catch(function(error) {
+      .catch(function (error) {
         // your action on error success
 
         alert(error);
@@ -1276,11 +1295,14 @@ class Pedido extends Component {
         this.gravarValores("itenspedido", JSON.stringify(colecao));
         this.gravarValores("itenspedidoarray", colecao);
 
+        console.log('PRECO POR CAIXA');
+        console.log(j_retorno_item[0].prc_compra_cx)
+
         this.setState({
           produtoscarrinho: colecao,
           peso_total: this.state.peso_total + peso_calculado,
           valor_bruto_total:
-            Number(j_retorno_item[0].prc_compra_cx) +
+            Number(j_retorno_item[0].prc_compra_cx.replace(',', '.')) +
             Number(this.state.valor_bruto_total),
           total_volumes:
             Number(this.state.total_volumes) +
@@ -1335,7 +1357,7 @@ class Pedido extends Component {
 
   apagaTodosValores = async () => await localStorage.clear();
 
-  DeletaLinhaTabela = async e => {};
+  DeletaLinhaTabela = async e => { };
 
   handleDrawerOpen = () => {
     this.setState({
@@ -1376,7 +1398,7 @@ class Pedido extends Component {
       filterType: "dropdown",
       filter: true,
       print: false,
-      download: false,
+      download: true,
       viewColumns: false,
       responsive: "stacked",
       rowsPerPage: 10,
@@ -1610,7 +1632,7 @@ class Pedido extends Component {
             onChange: this.handleDescontoItem
           }}
         />
-       
+
       </React.Fragment>
     );
 
@@ -1813,11 +1835,11 @@ class Pedido extends Component {
                           options={this.state.pagamento}
                           isDisabled={this.state.temproduto}
 
-                          //value={this.state.pagamento.filter(
-                          //  option =>
-                          //    option.value ===
-                          //    this.state.forma_pagamento_default
-                          //)}
+                        //value={this.state.pagamento.filter(
+                        //  option =>
+                        //    option.value ===
+                        //    this.state.forma_pagamento_default
+                        //)}
                         ></Select>
                       )}
                     </React.Fragment>
@@ -1983,10 +2005,168 @@ class Pedido extends Component {
                         />
                       </div>
                     </Paper>
+                    <Paper
+                      className={classes.paper}
+                      style={{ position: "relative", backgroundColor: "#025159" }}
+                    >
+                      <div className={classes.inlining}>
+                        <Grid alignItems="center" justify="center" container>
+                          <Typography variant="h6"
+                            style={{
+                              margin: 10
+                            }}>
+                            <Box color="#FFFFFF">
+                              Investimento R$
+                            </Box>
+                          </Typography>
+                          <TextField
+                            id="outlined-name"
+                            className={classes.textField}
+                            value={this.state.investimento}
+                            margin="normal"
+                            variant="outlined"
+                            InputProps={{
+                              inputComponent: TextMaskPercent,
+                              value: this.state.investimento,
+                              label: "Investimento",
+                              onChange: this.handleInvestimento
+                            }}
+                          />
+                        </Grid>
+                      </div>
+                    </Paper>
+                    <Grid container spacing={4} justify="center">
+                      <Grid item xs={12} md={6}>
+
+                        <Paper
+                          className={classes.paper}
+                          style={{ position: "relative", backgroundColor: "#03A696" }}
+                        >
+                          <Typography variant="h5" gutterBottom>
+                            <Box color="#FFFFFF">
+                              Totais
+                            </Box>
+                          </Typography>
+                          <List className={classes.list}>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <ImageIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Mercadoria</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <ImageIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Bruto</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <ImageIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Liquido</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <WorkIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Peso Total</Typography>} secondary={this.state.peso_total} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <BeachAccessIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Volume Total</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                          </List>
+                        </Paper>
+
+
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+
+                        <Paper
+                          className={classes.paper}
+                          style={{ position: "relative", backgroundColor: "#03A696" }}
+                        >
+                          <Typography variant="h5" gutterBottom>
+                            <Box color="#FFFFFF">
+                              Margem
+                          </Box>
+                          </Typography>
+                          <List className={classes.list}>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <ImageIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Contrato</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <WorkIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Frete</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <BeachAccessIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% CPV</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <BeachAccessIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Comissão</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemAvatar>
+                                <Avatar style={{ backgroundColor: "#F28705" }}>
+                                  <BeachAccessIcon />
+                                </Avatar>
+                              </ListItemAvatar>
+                              <ListItemText
+                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Imposto</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                            </ListItem>
+                          </List>
+                        </Paper>
+
+
+                      </Grid>
+                    </Grid>
+
                   </Grid>
                 )}
                 {this.state.produtoscarrinho.length > 0 && (
-                  <Paper className={classes.paper}>
+                  <Paper className={classes.paper}
+                    style={{ position: "relative", backgroundColor: "#FFFFFF" }}>
                     <div className={classes.buttonBar}>
                       <Button
                         variant="contained"
