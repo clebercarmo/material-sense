@@ -21,6 +21,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import Box from "@material-ui/core/Box";
 import Modal from "@material-ui/core/Modal";
 import Slide from "@material-ui/core/Slide";
+import Chip from "@material-ui/core/Chip";
 import TextMaskPercent from "./mask/maskporcentagem";
 import TextMaskQuantidade from "./mask/maskquantidade";
 import Divider from "@material-ui/core/Divider";
@@ -188,6 +189,8 @@ class Pedido extends Component {
       cod_cliente: "",
       peso_total: 0,
       valor_bruto_total: 0.00,
+      valor_liquido_total: 0.00,
+      valor_mercadoria_total: 0.00,
       total_volumes: 0,
       peso_produto: 0,
       forma_pagamento_default: null,
@@ -195,6 +198,12 @@ class Pedido extends Component {
       cod_tp_pedido: "",
       cod_pagamento: "",
       cod_frete: "",
+      frete_kg: 0.00,
+      margem_frete: 0.00,
+      p_descontocontrato: 0.00,
+      margem_contrato: 0.00,
+      margem_comissao: 0.00,
+      p_comissao: 0.00,
       pedidosvenda: null,
       produtos: [],
       clientes: [],
@@ -256,6 +265,7 @@ class Pedido extends Component {
       forma_pagamento_escolhida: null,
       pedidoorigeminformado: "",
       investimento: 0.00,
+      margem_investimento: 0.00,
       pedidos: []
     };
 
@@ -431,6 +441,7 @@ class Pedido extends Component {
 
     this.setState({
       clientes: response.data.ttRetorno,
+      frete_kg: 0.14532501475821,
       loading: false
     });
     //this.handleClose();
@@ -614,6 +625,11 @@ class Pedido extends Component {
 
 
   handleInvestimento = e => {
+
+    this.setState({
+      investimento: e.target.value,
+      margem_investimento: ((e.target.value / this.valor_liquido_total) * 100)
+    });
 
   };
 
@@ -1233,6 +1249,7 @@ class Pedido extends Component {
           this.state.quantidadeitem
         );
 
+        console.log('RETORNO VINDO DOS DETALHE DO ITEM');
         console.log(j_retorno_item);
 
         if (!this.state.isBonificacao) {
@@ -1267,6 +1284,9 @@ class Pedido extends Component {
             dt_entrega: this.state.data_entrega_formatado,
             tabela: this.state.tabelaprecocliente,
             precoitem: j_retorno_item[0].prc_liquido,
+            precoliquido: j_retorno_item[0].prc_liquido_limpo,
+            p_descontocontrato: j_retorno_item[0].vl_desconto,
+            p_comissao: j_retorno_item[0].vl_comissao,
             prc_tabela: j_retorno_item[0].prc_tabela,
             per_desc_canal: j_retorno_item[0].per_desc_canal,
             pedido_origem: this.state.pedidoorigeminformado,
@@ -1281,7 +1301,8 @@ class Pedido extends Component {
             peso: peso_calculado,
             campanha: this.state.descontocampanha.replace(".", ","),
             descontoitem: this.state.descontoitem.replace(".", ","),
-            total: j_retorno_item[0].prc_compra_cx
+            total: j_retorno_item[0].prc_compra_cx,
+            margem: j_retorno_item[0].possui_margem
           }
         ]);
 
@@ -1300,15 +1321,29 @@ class Pedido extends Component {
 
         this.setState({
           produtoscarrinho: colecao,
-          peso_total: this.state.peso_total + peso_calculado,
+          peso_total: this.state.peso_total + Number(j_retorno_item[0].peso_bruto),
+          //peso_total: this.state.peso_total + peso_calculado,
           valor_bruto_total:
             Number(j_retorno_item[0].prc_compra_cx.replace(',', '.')) +
             Number(this.state.valor_bruto_total),
+          valor_liquido_total:
+            ( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) +
+            Number(this.state.valor_liquido_total),  
+          valor_mercadoria_total:
+           ( Number(j_retorno_item[0].prc_liquido.replace(',', '.')) * qt_ajustada ) +
+            Number(this.state.valor_mercadoria_total), 
           total_volumes:
             Number(this.state.total_volumes) +
             Number(this.state.quantidadeitem),
           temproduto: true
         });
+
+        this.setState({
+          margem_frete: this.state.frete_kg * this.state.peso_total,
+          margem_contrato: ( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * 0.1401 + this.state.margem_contrato,
+          margem_comissao: (( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * Number(j_retorno_item[0].vl_comissao)) + this.state.margem_comissao
+          
+        })
 
         this.limpacampos();
       } else {
@@ -1516,11 +1551,18 @@ class Pedido extends Component {
       },
       {
         name: "precoitem",
-        label: "Valor Venda",
+        label: "Mercadoria",
         options: {
           filter: false
         }
       },
+      /*{
+        name: "precoliquido",
+        label: "Liquido",
+        options: {
+          filter: false
+        }
+      },*/
       {
         name: "per_desc_canal",
         Label: "Desconto Canal",
@@ -1590,6 +1632,38 @@ class Pedido extends Component {
         options: {
           filter: false,
           sort: false
+        }
+      },
+      {
+        name: "margem",
+        label: "Margem",
+        options: {
+          filter: false,
+          sort: false,
+          
+            customBodyRender: (value, tableMeta, updateValue) => { 
+              console.log(tableMeta)
+              
+              if (tableMeta.rowData[9] === "SIM"){
+               return (
+                 <Chip
+                   label="SIM"
+                   color="primary"
+                   style={{ backgroundColor: "#04BF33" }}
+                 />
+               );
+              }else{
+                 return (
+                   <Chip
+                     label="NÃO"
+                     color="primary"
+                     style={{ backgroundColor: "#F23005" }}
+                   />
+                 );
+              }
+ 
+            }
+          
         }
       }
     ];
@@ -1932,40 +2006,6 @@ class Pedido extends Component {
                       ></Select>
                       <Divider />
 
-                      <div className={classes.totais}>
-                        <Grid
-                          alignItems="center"
-                          justify="center"
-                          container
-                          className={classes.gridtotais}
-                        >
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Tabela: R$: {this.state.precotabela}
-                            </Box>
-                          </Typography>
-
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Peso Bruto Total: KG: {this.state.peso_total}
-                            </Box>
-                          </Typography>
-
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Valor Bruto Total: R$:{" "}
-                              {this.state.valor_bruto_total}
-                            </Box>
-                          </Typography>
-
-                          <Typography variant="h6" gutterBottom>
-                            <Box color="primary.main">
-                              Volume Total: UN: {this.state.total_volumes}
-                            </Box>
-                          </Typography>
-                        </Grid>
-                      </div>
-
                       <div className={classes.inlining}>
                         <Grid alignItems="center" justify="center" container>
                           {quantidadecomponent}
@@ -2003,6 +2043,24 @@ class Pedido extends Component {
                           columns={columns}
                           options={options}
                         />
+                      </div>
+                    </Paper>
+                    <Paper
+                      className={classes.paper}
+                      style={{ position: "relative", backgroundColor: "#025150" }}
+                    >
+                      <div className={classes.inlining}>
+                        <Grid alignItems="center" justify="center" container>
+                          <Typography variant="h6"
+                            style={{
+                              margin: 10
+                            }}>
+                            <Box color="#FFFFFF">
+                              Lucro Liquido: {Math.round((100 - (((this.state.margem_frete + Number(this.state.investimento) + this.state.margem_contrato + this.state.margem_comissao ) / this.state.valor_liquido_total ) * 100)), -2)} %
+                            </Box>
+                          </Typography>
+                        
+                        </Grid>
                       </div>
                     </Paper>
                     <Paper
@@ -2054,7 +2112,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Mercadoria</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Mercadoria</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_mercadoria_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2062,7 +2120,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Bruto</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Bruto</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_bruto_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2070,7 +2128,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Liquido</Typography>} secondary={this.state.valor_bruto_total.toLocaleString()} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Liquido</Typography>}  secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_liquido_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2078,7 +2136,7 @@ class Pedido extends Component {
                                   <WorkIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Peso Total</Typography>} secondary={this.state.peso_total} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Peso Total</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.peso_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2106,6 +2164,7 @@ class Pedido extends Component {
                               Margem
                           </Box>
                           </Typography>
+                          
                           <List className={classes.list}>
                             <ListItem>
                               <ListItemAvatar>
@@ -2114,7 +2173,7 @@ class Pedido extends Component {
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Contrato</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_contrato / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.margem_contrato.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2123,8 +2182,10 @@ class Pedido extends Component {
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Frete</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_frete / this.state.valor_liquido_total) * 100), -2)} - R$ {(this.state.margem_frete.toFixed(2)).toLocaleString()} </Typography>} />
                             </ListItem>
+                            
+                           
                             <ListItem>
                               <ListItemAvatar>
                                 <Avatar style={{ backgroundColor: "#F28705" }}>
@@ -2143,7 +2204,7 @@ class Pedido extends Component {
                               </ListItemAvatar>
                               <ListItemText
                                 primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Comissão</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_comissao / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.margem_comissao.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2152,10 +2213,11 @@ class Pedido extends Component {
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText
-                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Imposto</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                                primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Investimento</Typography>}
+                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.investimento / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.investimento.toLocaleString()} </Typography>} />
                             </ListItem>
                           </List>
+                          
                         </Paper>
 
 
