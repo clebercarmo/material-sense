@@ -203,6 +203,7 @@ class Pedido extends Component {
       p_descontocontrato: 0.00,
       margem_contrato: 0.00,
       margem_comissao: 0.00,
+      margem_cvp: 0.00,
       p_comissao: 0.00,
       pedidosvenda: null,
       produtos: [],
@@ -439,9 +440,10 @@ class Pedido extends Component {
       {}
     );
 
+    
+
     this.setState({
       clientes: response.data.ttRetorno,
-      frete_kg: 0.14532501475821,
       loading: false
     });
     //this.handleClose();
@@ -472,13 +474,17 @@ class Pedido extends Component {
       await this.cargaformapagamento(e.value);
       await this.cargaitens(e.tabeladepreco);
 
+      console.log('DADOS DO MEU CLIENTE ESCOLHIDO');
+      console.log(e)
+
       this.setState({
         loading: false,
         cod_cliente: e.value,
         tabelaprecocliente: e.tabeladepreco,
         descontocanal: e.descontocanal,
         isescolheucliente: true,
-        forma_pagamento_default: e.condpagamento
+        forma_pagamento_default: e.condpagamento,
+        frete_kg: e.frete_kg,
       });
       /*
       this.setState({
@@ -1289,6 +1295,7 @@ class Pedido extends Component {
             p_comissao: j_retorno_item[0].vl_comissao,
             prc_tabela: j_retorno_item[0].prc_tabela,
             per_desc_canal: j_retorno_item[0].per_desc_canal,
+            valor_cvp: j_retorno_item[0].vl_cvt,
             pedido_origem: this.state.pedidoorigeminformado,
             data_atendimento: "",
             observacoes: "",
@@ -1316,9 +1323,6 @@ class Pedido extends Component {
         this.gravarValores("itenspedido", JSON.stringify(colecao));
         this.gravarValores("itenspedidoarray", colecao);
 
-        console.log('PRECO POR CAIXA');
-        console.log(j_retorno_item[0].prc_compra_cx)
-
         this.setState({
           produtoscarrinho: colecao,
           peso_total: this.state.peso_total + Number(j_retorno_item[0].peso_bruto),
@@ -1340,8 +1344,9 @@ class Pedido extends Component {
 
         this.setState({
           margem_frete: this.state.frete_kg * this.state.peso_total,
-          margem_contrato: ( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * 0.1401 + this.state.margem_contrato,
-          margem_comissao: (( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * Number(j_retorno_item[0].vl_comissao)) + this.state.margem_comissao
+          margem_contrato: (( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * Number(j_retorno_item[0].p_descontos)) + this.state.margem_contrato,
+          margem_comissao: (( Number(j_retorno_item[0].prc_liquido_limpo.replace(',', '.')) * qt_ajustada ) * Number(j_retorno_item[0].p_comissao)) + this.state.margem_comissao,
+          margem_cvp: Number(j_retorno_item[0].vl_cvt) + this.state.margem_cvp
           
         })
 
@@ -2056,7 +2061,23 @@ class Pedido extends Component {
                               margin: 10
                             }}>
                             <Box color="#FFFFFF">
-                              Lucro Liquido: {Math.round((100 - (((this.state.margem_frete + Number(this.state.investimento) + this.state.margem_contrato + this.state.margem_comissao ) / this.state.valor_liquido_total ) * 100)), -2)} %
+                              LB2 %: {Math.round((100 - (((this.state.margem_frete + Number(this.state.investimento) + this.state.margem_contrato + this.state.margem_comissao + this.state.margem_cvp) / this.state.valor_liquido_total ) * 100)), -2)}%
+                            </Box>
+                          </Typography>
+                          <Typography variant="h6"
+                            style={{
+                              margin: 10
+                            }}>
+                            <Box color="#FFFFFF">
+                              LB2:  R$ {Math.round(  this.state.valor_liquido_total - (this.state.margem_frete + Number(this.state.investimento) + this.state.margem_contrato + this.state.margem_comissao + this.state.margem_cvp), -2)}
+                            </Box>
+                          </Typography>
+                          <Typography variant="h6"
+                            style={{
+                              margin: 10
+                            }}>
+                            <Box color="#FFFFFF">
+                              LB2 Caixa:  R$ {Math.round(( this.state.valor_liquido_total - (this.state.margem_frete + Number(this.state.investimento) + this.state.margem_contrato + this.state.margem_comissao + this.state.margem_cvp)) / this.state.total_volumes, -2)} 
                             </Box>
                           </Typography>
                         
@@ -2112,7 +2133,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Mercadoria</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_mercadoria_total.toLocaleString()} </Typography>} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Mercadoria</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>R$ {this.state.valor_mercadoria_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2120,7 +2141,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Bruto</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_bruto_total.toLocaleString()} </Typography>} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Bruto</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>R$ {this.state.valor_bruto_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2128,7 +2149,7 @@ class Pedido extends Component {
                                   <ImageIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Liquido</Typography>}  secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.valor_liquido_total.toLocaleString()} </Typography>} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Liquido</Typography>}  secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>R$ {this.state.valor_liquido_total.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2136,7 +2157,7 @@ class Pedido extends Component {
                                   <WorkIcon />
                                 </Avatar>
                               </ListItemAvatar>
-                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Peso Total</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.peso_total.toLocaleString()} </Typography>} />
+                              <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Peso Total</Typography>} secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.peso_total.toLocaleString()} KG </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2146,7 +2167,7 @@ class Pedido extends Component {
                               </ListItemAvatar>
                               <ListItemText
                                 primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>Volume Total</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.total_volumes} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{this.state.total_volumes} CX </Typography>} />
                             </ListItem>
                           </List>
                         </Paper>
@@ -2173,7 +2194,7 @@ class Pedido extends Component {
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Contrato</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_contrato / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.margem_contrato.toLocaleString()} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{Math.round((( this.state.margem_contrato / this.state.valor_liquido_total) * 100), -2).toLocaleString()}%     R$ {this.state.margem_contrato.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2182,7 +2203,7 @@ class Pedido extends Component {
                                 </Avatar>
                               </ListItemAvatar>
                               <ListItemText primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Frete</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_frete / this.state.valor_liquido_total) * 100), -2)} - R$ {(this.state.margem_frete.toFixed(2)).toLocaleString()} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{Math.round((( this.state.margem_frete / this.state.valor_liquido_total) * 100), -2)}%     R$ {(this.state.margem_frete.toFixed(2)).toLocaleString()} </Typography>} />
                             </ListItem>
                             
                            
@@ -2194,7 +2215,7 @@ class Pedido extends Component {
                               </ListItemAvatar>
                               <ListItemText
                                 primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% CPV</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>{this.state.total_volumes} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{Math.round((( this.state.margem_cvp / this.state.valor_liquido_total) * 100), -2)}%     R$ {this.state.margem_cvp} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2204,7 +2225,7 @@ class Pedido extends Component {
                               </ListItemAvatar>
                               <ListItemText
                                 primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Comissão</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.margem_comissao / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.margem_comissao.toLocaleString()} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{Math.round((( this.state.margem_comissao / this.state.valor_liquido_total) * 100), -2)}%      R$ {this.state.margem_comissao.toLocaleString()} </Typography>} />
                             </ListItem>
                             <ListItem>
                               <ListItemAvatar>
@@ -2214,7 +2235,7 @@ class Pedido extends Component {
                               </ListItemAvatar>
                               <ListItemText
                                 primary={<Typography variant="h5" style={{ color: '#FFFFFF' }}>% Investimento</Typography>}
-                                secondary={<Typography variant="h6" style={{ color: '#F20505' }}>% {Math.round((( this.state.investimento / this.state.valor_liquido_total) * 100), -2)} - R$ {this.state.investimento.toLocaleString()} </Typography>} />
+                                secondary={<Typography variant="h6" style={{ color: '#FFFFFF' }}>{Math.round((( this.state.investimento / this.state.valor_liquido_total) * 100), -2)}%     R$ {this.state.investimento.toLocaleString()} </Typography>} />
                             </ListItem>
                           </List>
                           
